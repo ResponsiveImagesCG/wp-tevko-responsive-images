@@ -1,9 +1,9 @@
-WP-tevko-responsive-images
+RICG-responsive-images
 ---
 
 Bringing automatic default responsive images to wordpress.
 
-This plugin works by including 4 additional image sizes for each image upload. Whenever wordpress outputs the image through the media uploader, those 4 sizes (as well as the initial source and the default wordpress image sizes) will be included in the image tag via the [srcset](http://css-tricks.com/responsive-images-youre-just-changing-resolutions-use-srcset/) attribute.
+This plugin works by including all available image sizes for each image upload. Whenever wordpress outputs the image through the media uploader, or whenever a featured image is generated, those sizes will be included in the image tag via the [srcset](http://css-tricks.com/responsive-images-youre-just-changing-resolutions-use-srcset/) attribute. 
 
 ##Hardcoding in template files
 
@@ -17,11 +17,15 @@ ex.)
 
 ##Version
 
-2.0.0
+2.0.1
 
-##Changelog
+##Changelog 
 
- - Uses [Picturefill 2.2.2 (Beta)](http://scottjehl.github.io/picturefill/)
+- Only outputs the default wordpress sizes, giving theme developers the option to extend as needed
+- Added support for featured images
+
+**2.0.0**
+ - Uses [Picturefill 2.2.0 (Beta)](http://scottjehl.github.io/picturefill/)
  - Scripts are output to footer
  - Image sizes adjusted
  - Most importantly, the srcset syntax is being used
