@@ -1,9 +1,9 @@
 === RICG Responsive Images ===
-Contributors: Tim Evko, Mat Marquis, Chris Coyier, Michael McGinnis, Joe McGill, Kelly Dwan, Brandon Lavigne, Andrew Nacin , George Stephanis, Helen Hou-Sandí, Bocoup, The Wordpress Core Team
+Contributors: tevko, wilto, chriscoyier, joemcgill, Michael McGinnis, ryelle, Brandon Lavigne, nacin , georgestephanis, helen, wordpressdotorg, Bocoup
 Tags: Responsive, Images, Responsive Images, SRCSET, Picturefill
 Requires at least: 4.1
 Tested up to: 4.1
-Stable tag: 2.1.0
+Stable tag: 2.0.2
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -31,11 +31,14 @@ ex.)
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
-= 2.1 =
- * Only outputs the default wordpress sizes, giving theme developers the option to extend as needed
+= 2.0.2 =
+ * A bugfix correcting a divide by zero error. Some users may have seen this after upgrading to 2.0.1
+
+= 2.0.1 =
+ * Only outputs the default WordPress sizes, giving theme developers the option to extend as needed
  * Added support for featured images
 
-= 2.0 =
+= 2.0.0 =
  * Uses [Picturefill 2.2.0 (Beta)](http://scottjehl.github.io/picturefill/)
  * Scripts are output to footer
  * Image sizes adjusted

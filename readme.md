@@ -17,10 +17,13 @@ ex.)
 
 ##Version
 
-2.0.1
+2.0.2
 
-##Changelog 
+##Changelog
 
+- A bugfix correcting a divide by zero error. Some users may have seen this after upgrading to 2.0.1
+
+**2.0.1**
 - Only outputs the default wordpress sizes, giving theme developers the option to extend as needed
 - Added support for featured images
 
