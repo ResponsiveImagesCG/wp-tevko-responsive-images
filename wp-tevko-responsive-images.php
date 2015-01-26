@@ -50,14 +50,13 @@ function tevkori_get_src_sizes( $id, $size ) {
 		'file'		=> $image_meta['file']
 	);
 
-	// set ratio (rounded to hundredths)
-	$ratio = round( ($img_width / $img_height), 2);
-
 	// Remove any hard-crops
 	foreach ( $default_sizes as $key => $image_size ) {
-		$crop_ratio = round( ($image_size['width'] / $image_size['height']), 2 );
 
-		if( $crop_ratio !== $ratio ) {
+		// calculate the height we would expect if this is a soft crop given the size width
+		$soft_height = (int) round( $image_size['width'] * $img_height / $img_width );
+
+		if( $image_size['height'] !== $soft_height ) {
 			unset( $default_sizes[$key] );
 		}
 	}
@@ -111,3 +110,10 @@ add_filter( 'post_thumbnail_html', 'tevkori_filter_post_thumbnail_html', 0, 5);
 function tevkori_editor_image_size( $max_image_size ){
 	return array( 99999, 99999 );
 }
+
+function tevkori_load_admin_scripts( $hook ) {
+	if ($hook == 'post.php' || $hook == 'post-new.php') {
+		wp_enqueue_script( 'wp-tevko-responsive-images', plugin_dir_url( __FILE__ ) . 'js/wp-tevko-responsive-images.js', array('wp-backbone'), '2.0.0', true );
+	}
+}
+add_action( 'admin_enqueue_scripts', 'tevkori_load_admin_scripts' );
