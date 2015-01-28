@@ -20,9 +20,29 @@ defined('ABSPATH') or die("No script kiddies please!");
 
 // First we queue the polyfill
 function tevkori_get_picturefill() {
-	wp_enqueue_script( 'picturefill', plugins_url( 'js/picturefill.js', __FILE__ ), array(), '2.2.0', true );
+	wp_enqueue_script( 'picturefill', plugins_url( 'js/picturefill.js', __FILE__ ), array(), '2.2.0', false );
 }
 add_action( 'wp_enqueue_scripts', 'tevkori_get_picturefill' );
+
+
+/**
+ * Async JavaScript files, future scripts could use the same filter
+ *
+ * @since		2.2.0
+ *
+ * @param 	string 	$tag    The `<script>` tag for the enqueued script.
+ * @param 	string 	$handle The script's registered handle.
+ * @param 	string 	$src    The script's source URL.
+ * @return	string	filtered `<script>` tag.
+ */
+function tevkori_async_scripts($tag, $handle, $src) {
+	if ('picturefill' === $handle) {
+		$tag = str_replace('></', 'async=""></', $tag );
+	}
+
+	return $tag;
+}
+add_filter('script_loader_tag', 'tevkori_async_scripts', 10, 3);
 
 //return an array of srcset values
 
