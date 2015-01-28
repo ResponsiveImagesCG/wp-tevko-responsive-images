@@ -6,10 +6,10 @@ defined('ABSPATH') or die("No script kiddies please!");
  * @package           http://css-tricks.com/hassle-free-responsive-images-for-wordpress/
  *
  * @wordpress-plugin
- * Plugin Name:       WP Tevko Responsive Images
+ * Plugin Name:       RICG Responsive Images
  * Plugin URI:        http://css-tricks.com/hassle-free-responsive-images-for-wordpress/
  * Description:       Bringing automatic default responsive images to wordpress
- * Version:           2.0.2
+ * Version:           2.1.0
  * Author:            Tim Evko
  * Author URI:        http://timevko.com/
  * License:           GPL-2.0+
@@ -24,9 +24,9 @@ function tevkori_get_picturefill() {
 }
 add_action( 'wp_enqueue_scripts', 'tevkori_get_picturefill' );
 
-//return an image with src and sizes attributes
+//return an array of srcset values
 
-function tevkori_get_src_sizes( $id, $size ) {
+function tevkori_get_srcset_array( $id, $size ) {
 	$arr = array();
 
 	// See which image is being returned and bail if none is found
@@ -73,14 +73,24 @@ function tevkori_get_src_sizes( $id, $size ) {
 		$arr[] = $image_src[0] . ' ' . $size['width'] .'w';
 	}
 
-	return 'srcset="' . implode( ', ', $arr ) . '"';
+	return $arr;
 }
 
-//extend image tag to include sizes attribute
+//return a full srcset string
+
+function tevkori_get_srcset_string( $id, $size ) {
+	$srcset_array = tevkori_get_srcset_array( $id, $size );
+	if ( empty( $srcset_array ) ) {
+		return false;
+	}
+	return 'srcset="' . implode( ', ', $srcset_array ) . '"';
+}
+
+//extend image tag to include srcset attribute
 
 function tevkori_extend_image_tag( $html, $id, $caption, $title, $align, $url, $size, $alt ) {
 	add_filter( 'editor_max_image_size', 'tevkori_editor_image_size' );
-	$srcset = tevkori_get_src_sizes( $id, $size );
+	$srcset = tevkori_get_srcset_string( $id, $size );
 	remove_filter( 'editor_max_image_size', 'tevkori_editor_image_size' );
 	$html = preg_replace( '/(src\s*=\s*"(.+?)")/', '$1' . ' ' . $srcset, $html );
 	return $html;
@@ -94,7 +104,7 @@ function tevkori_filter_post_thumbnail_html( $html, $post_id, $post_thumbnail_id
 		return;
 	}
 
-	$srcset = tevkori_get_src_sizes( $post_thumbnail_id, $size );
+	$srcset = tevkori_get_srcset_string( $post_thumbnail_id, $size );
 	$html = preg_replace( '/(src\s*=\s*"(.+?)")/', '$1' . ' ' . $srcset, $html );
 	return $html;
 }
