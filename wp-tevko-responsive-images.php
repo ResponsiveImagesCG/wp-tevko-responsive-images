@@ -180,34 +180,20 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 
 		// If image height doesn't varies more than 2px over the expected, use it.
 		if ( $img['height'] >= $expected_height - 2 && $img['height'] <= $expected_height + 2  ) {
-			$arr[] = $img_base_url . $img['file'] . ' ' . $img['width'] .'w';
+			
+			// Add source string to array, using width as key to prevent duplicates and for sorting.
+			$arr[ $img['width'] ] = $img_base_url . $img['file'] . ' ' . $img['width'] .'w';
 		}
 	}
 
 	if ( empty( $arr ) ) {
 		return false;
 	}
-
+	
+	// Sort by width.
+	ksort( $arr );
+	
 	return $arr;
-}
-
-/**
- * Get the value for the 'srcset' attribute.
- *
- * @since 2.3.0
- *
- * @param int    $id   Image attachment ID.
- * @param string $size Optional. Name of image size. Default value: 'thumbnail'.
- * @return string|bool A 'srcset' value string or false.
- */
-function tevkori_get_srcset( $id, $size = 'thumbnail' ) {
-	$srcset_array = tevkori_get_srcset_array( $id, $size );
-
-	if ( empty( $srcset_array ) ) {
-		return false;
-	}
-
-	return implode( ', ', $srcset_array );
 }
 
 /**
@@ -220,12 +206,14 @@ function tevkori_get_srcset( $id, $size = 'thumbnail' ) {
  * @return string|bool A full 'srcset' string or false.
  */
 function tevkori_get_srcset_string( $id, $size = 'thumbnail' ) {
-	$srcset_value = tevkori_get_srcset( $id, $size );
-
-	if ( empty( $srcset_value ) ) {
+	$srcset_array = tevkori_get_srcset_array( $id, $size );
+	
+	if ( empty( $srcset_array ) ) {
 		return false;
 	}
-
+	
+	$srcset_value = implode( ', ', $srcset_array );
+	
 	return 'srcset="' . $srcset_value . '"';
 }
 
@@ -244,12 +232,30 @@ function tevkori_get_src_sizes( $id, $size = 'thumbnail' ) {
 }
 
 /**
+ * Get the value for the 'data-src' attribute.
+ *
+ * @since 2.3.0
+ *
+ * @param array $srcset_array An array with 'srcset' values.
+ * @return string A 'data-src' value string.
+ */
+function tevkori_get_src( $srcset_array ) {
+	
+	// Get the first image from the srcset array and remove the w value from the string.
+	list( $src ) = explode( ' ', reset( $srcset_array ), 2 );
+
+	return $src;
+}
+
+/**
  * Filter for extending image tag to include srcset attribute.
  *
  * @see images_send_to_editor
  * @return string HTML for image.
  */
 function tevkori_extend_image_tag( $html, $id, $caption, $title, $align, $url, $size, $alt ) {
+	$sizes = $srcset = $src = '';
+	
 	add_filter( 'editor_max_image_size', 'tevkori_editor_image_size' );
 
 	$sizes = tevkori_get_sizes( $id, $size );
@@ -258,14 +264,24 @@ function tevkori_extend_image_tag( $html, $id, $caption, $title, $align, $url, $
 	if ( $sizes ) {
 		$sizes = 'data-sizes="' . $sizes . '"';
 	}
+	
+	$srcset_array = tevkori_get_srcset_array( $id, $size );
+	
+	if ( $srcset_array ) {
+		
+		// Build the srcset attribute.
+		$srcset_value = implode( ', ', $srcset_array );
+		$srcset = 'srcset="' . $srcset_value . '"';
 
-	// Build the srcset attribute.
-	$srcset = tevkori_get_srcset_string( $id, $size );
-
+		// Build the data-src attribute.
+		$src_value = tevkori_get_src( $srcset_array );
+		$src = 'data-src="' . $src_value . '"';
+	}
+		
 	remove_filter( 'editor_max_image_size', 'tevkori_editor_image_size' );
-
-	$html = preg_replace( '/(src\s*=\s*"(.+?)")/', '$1 ' . $sizes . ' ' . $srcset, $html );
-
+	
+	$html = preg_replace( '/(src\s*=\s*"(.+?)")/', '$1 ' . $src . ' ' . $sizes . ' ' . $srcset, $html );
+	
 	return $html;
 }
 add_filter( 'image_send_to_editor', 'tevkori_extend_image_tag', 0, 8 );
@@ -287,13 +303,20 @@ function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size )
 			$attr['sizes'] = $sizes;
 		}
 	}
+	
+    $srcset_array = tevkori_get_srcset_array( $attachment_id, $size );
+	
+	if ( $srcset_array ) {
+		if ( ! isset( $attr['srcset'] ) ) {
+			$srcset_value = implode( ', ', $srcset_array );
+			$attr['srcset'] = $srcset_value;
+		}
 
-	if ( ! isset( $attr['srcset'] ) ) {
-		$srcset = tevkori_get_srcset( $attachment_id, $size );
-		$attr['srcset'] = $srcset;
+		$src_value = tevkori_get_src( $srcset_array );
+		$attr['src'] = $src_value;
 	}
-
-	return $attr;
+    
+    return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'tevkori_filter_attachment_image_attributes', 0, 4 );
 
@@ -328,9 +351,10 @@ add_action( 'admin_enqueue_scripts', 'tevkori_load_admin_scripts' );
  * @param string $content The raw post content to be filtered.
  */
 function tevkori_filter_content_sizes( $content ) {
-	$images = '/(<img\s.*?)data-sizes="([^"]+)"/i';
-	$sizes = '${2}';
-	$content = preg_replace( $images, '${1}sizes="' . $sizes . '"', $content );
+	$images = '/(<img\s.*?)src="[^"]+"\sdata-src="([^"]+)"\sdata-sizes="([^"]+)"/i';
+	$src = '${2}';
+	$sizes = '${3}';
+	$content = preg_replace( $images, '${1}src="' . $src . '" sizes="' . $sizes . '"', $content );
 
 	return $content;
 }
