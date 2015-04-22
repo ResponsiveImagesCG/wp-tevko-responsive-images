@@ -44,12 +44,12 @@ add_action( 'wp_enqueue_scripts', 'tevkori_get_picturefill' );
  */
 function tevkori_get_sizes( $id, $size = 'thumbnail', $args = null ) {
 	// See which image is being returned and bail if none is found
-	if ( ! $image = image_downsize( $id, $size ) ) {
+	if ( ! $img = image_downsize( $id, $size ) ) {
 		return false;
 	};
 
 	// Get the image width
-	$img_width = $image[1] . 'px';
+	$img_width = $img[1] . 'px';
 
 	// Set up our default values
 	$defaults = array(
@@ -142,24 +142,24 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 	$arr = array();
 
 	// See which image is being returned and bail if none is found
-	if ( ! $image = wp_get_attachment_image_src( $id, $size ) ) {
+	if ( ! $img = wp_get_attachment_image_src( $id, $size ) ) {
 		return false;
 	};
 
 	// break image data into url, width, and height
-	list( $img_url, $img_width, $img_height ) = $image;
+	list( $img_url, $img_width, $img_height ) = $img;
 
 	// image meta
-	$image_meta = wp_get_attachment_metadata( $id );
+	$img_meta = wp_get_attachment_metadata( $id );
 
-	// default sizes
-	$default_sizes = $image_meta['sizes'];
+	// Build an array with image sizes.
+	$img_sizes = $img_meta['sizes'];
 
-	// add full size to the default_sizes array
-	$default_sizes['full'] = array(
-		'width' 	=> $image_meta['width'],
-		'height'	=> $image_meta['height'],
-		'file'		=> substr( $image_meta['file'], strrpos( $image_meta['file'], '/' ) + 1 )
+	// Add full size to the img_sizes array.
+	$img_sizes['full'] = array(
+		'width'  => $img_meta['width'],
+		'height' => $img_meta['height'],
+		'file'   => substr( $img_meta['file'], strrpos( $img_meta['file'], '/' ) + 1 )
 	);
 	
 	// Image base url
@@ -169,14 +169,14 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 	$img_ratio = $img_height / $img_width;
 
 	// Only use sizes with same aspect ratio
-	foreach ( $default_sizes as $key => $image_size ) {
+	foreach ( $img_sizes as $img_size => $img ) {
 
-		// Calculate the height we would expect if this is a soft crop given the size width
-		$soft_height = (int) round( $image_size['width'] * $img_ratio );
+		// Calculate the height we would expect if the image size has the same aspect ratio.
+		$expected_height = (int) round( $img['width'] * $img_ratio );
 
 		// If image height doesn't varies more than 2px over the expected, use it.
-		if ( $image_size['height'] >= $soft_height - 2 && $image_size['height'] <= $soft_height + 2  ) {
-			$arr[] = $img_base_url . $image_size['file'] . ' ' . $image_size['width'] .'w';
+		if ( $img['height'] >= $expected_height - 2 && $img['height'] <= $expected_height + 2  ) {
+			$arr[] = $img_base_url . $img['file'] . ' ' . $img['width'] .'w';
 		}
 	}
 	
