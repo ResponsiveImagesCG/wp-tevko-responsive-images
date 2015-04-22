@@ -1,5 +1,8 @@
 <?php
 defined('ABSPATH') or die("No script kiddies please!");
+require_once plugin_dir_path(__FILE__) . 'class-respimg.php';
+require_once plugin_dir_path(__FILE__) . 'class-wp-image-editor-respimg.php';
+
 /**
  * @link              https://github.com/ResponsiveImagesCG/wp-tevko-responsive-images
  * @since             2.0.0
@@ -299,3 +302,15 @@ function tevkori_filter_content_sizes( $content ) {
 	return $content;
 }
 add_filter('the_content', 'tevkori_filter_content_sizes');
+
+
+/**
+ * Filter to add php-respimg as an image editor
+ *
+ * @return array editors
+ **/
+function tevkori_wp_image_editors($editors) {
+	array_unshift($editors, 'WP_Image_Editor_Respimg');
+	return $editors;
+}
+add_filter('wp_image_editors', 'tevkori_wp_image_editors');
