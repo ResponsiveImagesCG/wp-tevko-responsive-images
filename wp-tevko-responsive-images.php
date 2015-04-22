@@ -42,12 +42,12 @@ add_action( 'wp_enqueue_scripts', 'tevkori_get_picturefill' );
 function tevkori_get_sizes( $id, $size = 'thumbnail', $args = null ) {
 	
 	// See which image is being returned and bail if none is found
-	if ( ! $image = image_downsize( $id, $size ) ) {
+	if ( ! $img = image_downsize( $id, $size ) ) {
 		return false;
 	};
 
 	// Get the image width
-	$img_width = $image[1] . 'px';
+	$img_width = $img[1] . 'px';
 
 	// Set up our default values
 	$defaults = array(
@@ -142,49 +142,49 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 	$arr = array();
 
 	// See which image is being returned and bail if none is found
-	if ( ! $image = wp_get_attachment_image_src( $id, $size ) ) {
+	if ( ! $img = wp_get_attachment_image_src( $id, $size ) ) {
 		return false;
 	};
 
 	// Break image data into url, width, and height
-	list( $img_url, $img_width, $img_height ) = $image;
+	list( $img_url, $img_width, $img_height ) = $img;
 
 	// Image meta
-	$image_meta = wp_get_attachment_metadata( $id );
+	$img_meta = wp_get_attachment_metadata( $id );
 
-	// Default sizes
-	$default_sizes = $image_meta['sizes'];
+	// Image sizes
+	$img_sizes = $img_meta['sizes'];
 
-	// Add full size to the default_sizes array
-	$default_sizes['full'] = array(
-		'width' 	=> $image_meta['width'],
-		'height'	=> $image_meta['height'],
-		'file'		=> $image_meta['file']
+	// Add full size to the img_sizes array
+	$img_sizes['full'] = array(
+		'width' 	=> $img_meta['width'],
+		'height'	=> $img_meta['height'],
+		'file'		=> $img_meta['file']
 	);
 
-	// Remove any hard-crops
-	foreach ( $default_sizes as $key => $image_size ) {
+	// Remove image sizes with different aspect ratio
+	foreach ( $img_sizes as $img_size => $img ) {
 
-		// Calculate the height we would expect if this is a soft crop given the size width
-		$soft_height = (int) round( $image_size['width'] * $img_height / $img_width );
+		// Calculate the height we would expect if the image size has the same aspect ratio
+		$expected_height = (int) round( $img['width'] * $img_height / $img_width );
 
 		// If image height varies more than 1px over the expected, throw it out
-		if ( $image_size['height'] <= $soft_height - 2 || $image_size['height'] >= $soft_height + 2  ) {
-			unset( $default_sizes[ $key ] );
+		if ( $img['height'] <= $expected_height - 2 || $img['height'] >= $expected_height + 2  ) {
+			unset( $img_sizes[ $img_size ] );
 		}
 	}
 
 	// No sizes? Checkout early
-	if ( ! $default_sizes ) {
+	if ( ! $img_sizes ) {
 		return false;
 	}
 
-	// Loop through each size we know should exist
-	foreach ( $default_sizes as $key => $size ) {
+	// Loop through each image size we know should exist
+	foreach ( $img_sizes as $img_size => $img ) {
 
 		// Reference the size directly by its pixel dimension
-		$image_src = wp_get_attachment_image_src( $id, $key );
-		$arr[] = $image_src[0] . ' ' . $size['width'] .'w';
+		$img_src = wp_get_attachment_image_src( $id, $img_size );
+		$arr[] = $img_src[0] . ' ' . $img['width'] .'w';
 	}
 
 	return $arr;
