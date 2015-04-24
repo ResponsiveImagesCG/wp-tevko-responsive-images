@@ -156,31 +156,29 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 	$default_sizes['full'] = array(
 		'width' 	=> $image_meta['width'],
 		'height'	=> $image_meta['height'],
-		'file'		=> $image_meta['file']
+		'file'		=> substr( $image_meta['file'], strrpos( $image_meta['file'], '/' ) + 1 )
 	);
+	
+	// Image base url
+	$img_base_url = substr( $img_url, 0, strrpos( $img_url, '/' ) + 1 );
+	
+	// Image aspect ratio
+	$img_ratio = $img_height / $img_width;
 
-	// Remove any hard-crops
+	// Only use sizes with same aspect ratio
 	foreach ( $default_sizes as $key => $image_size ) {
 
-		// calculate the height we would expect if this is a soft crop given the size width
-		$soft_height = (int) round( $image_size['width'] * $img_height / $img_width );
+		// Calculate the height we would expect if this is a soft crop given the size width
+		$soft_height = (int) round( $image_size['width'] * $img_ratio );
 
-		// If image height varies more than 1px over the expected, throw it out.
-		if ( $image_size['height'] <= $soft_height - 2 || $image_size['height'] >= $soft_height + 2  ) {
-			unset( $default_sizes[$key] );
+		// If image height doesn't varies more than 2px over the expected, use it.
+		if ( $image_size['height'] >= $soft_height - 2 && $image_size['height'] <= $soft_height + 2  ) {
+			$arr[] = $img_base_url . $image_size['file'] . ' ' . $image_size['width'] .'w';
 		}
 	}
-
-	// No sizes? Checkout early
-	if( ! $default_sizes )
-	return false;
-
-	// Loop through each size we know should exist
-	foreach( $default_sizes as $key => $size ) {
-
-		// Reference the size directly by it's pixel dimension
-		$image_src = wp_get_attachment_image_src( $id, $key );
-		$arr[] = $image_src[0] . ' ' . $size['width'] .'w';
+	
+	if ( empty( $arr ) ) {
+		return false;
 	}
 
 	return $arr;
