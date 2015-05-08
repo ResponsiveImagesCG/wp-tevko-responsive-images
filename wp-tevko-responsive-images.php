@@ -1,5 +1,8 @@
 <?php
 defined('ABSPATH') or die("No script kiddies please!");
+require_once plugin_dir_path(__FILE__) . 'class-respimg.php';
+require_once plugin_dir_path(__FILE__) . 'class-wp-image-editor-respimg.php';
+
 /**
  * @link              https://github.com/ResponsiveImagesCG/wp-tevko-responsive-images
  * @since             2.0.0
@@ -156,49 +159,62 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 	$default_sizes['full'] = array(
 		'width' 	=> $image_meta['width'],
 		'height'	=> $image_meta['height'],
-		'file'		=> $image_meta['file']
+		'file'		=> substr( $image_meta['file'], strrpos( $image_meta['file'], '/' ) + 1 )
 	);
+	
+	// Image base url
+	$img_base_url = substr( $img_url, 0, strrpos( $img_url, '/' ) + 1 );
+	
+	// Image aspect ratio
+	$img_ratio = $img_height / $img_width;
 
-	// Remove any hard-crops
+	// Only use sizes with same aspect ratio
 	foreach ( $default_sizes as $key => $image_size ) {
 
-		// calculate the height we would expect if this is a soft crop given the size width
-		$soft_height = (int) round( $image_size['width'] * $img_height / $img_width );
+		// Calculate the height we would expect if this is a soft crop given the size width
+		$soft_height = (int) round( $image_size['width'] * $img_ratio );
 
-		// If image height varies more than 1px over the expected, throw it out.
-		if ( $image_size['height'] <= $soft_height - 2 || $image_size['height'] >= $soft_height + 2  ) {
-			unset( $default_sizes[$key] );
+		// If image height doesn't varies more than 2px over the expected, use it.
+		if ( $image_size['height'] >= $soft_height - 2 && $image_size['height'] <= $soft_height + 2  ) {
+			$arr[] = $img_base_url . $image_size['file'] . ' ' . $image_size['width'] .'w';
 		}
 	}
-
-	// No sizes? Checkout early
-	if( ! $default_sizes )
-	return false;
-
-	// Loop through each size we know should exist
-	foreach( $default_sizes as $key => $size ) {
-
-		// Reference the size directly by it's pixel dimension
-		$image_src = wp_get_attachment_image_src( $id, $key );
-		$arr[] = $image_src[0] . ' ' . $size['width'] .'w';
+	
+	if ( empty( $arr ) ) {
+		return false;
 	}
 
 	return $arr;
 }
 
 /**
- * Create a 'srcset' attribute.
+ * Get the value for the 'srcset' attribute.
  *
- * @param int $id 			Image attacment ID.
+ * @param int $id 			Image attachment ID.
  * @param string $size	Optional. Name of image size. Default value: 'thumbnail'.
- * @return string|bool 	A full 'srcset' string or false.
+ * @return string|bool 	A 'srcset' value string or false.
  */
-function tevkori_get_srcset_string( $id, $size = 'thumbnail' ) {
+function tevkori_get_srcset( $id, $size = 'thumbnail' ) {
 	$srcset_array = tevkori_get_srcset_array( $id, $size );
 	if ( empty( $srcset_array ) ) {
 		return false;
 	}
-	return 'srcset="' . implode( ', ', $srcset_array ) . '"';
+	return implode( ', ', $srcset_array );
+}
+
+/**
+ * Create a 'srcset' attribute.
+ *
+ * @param int $id 			Image attachment ID.
+ * @param string $size	Optional. Name of image size. Default value: 'thumbnail'.
+ * @return string|bool 	A full 'srcset' string or false.
+ */
+function tevkori_get_srcset_string( $id, $size = 'thumbnail' ) {
+	$srcset_value = tevkori_get_srcset( $id, $size );
+	if ( empty( $srcset_value ) ) {
+		return false;
+	}
+	return 'srcset="' . $srcset_value . '"';
 }
 
 /**
@@ -238,28 +254,30 @@ function tevkori_extend_image_tag( $html, $id, $caption, $title, $align, $url, $
 add_filter( 'image_send_to_editor', 'tevkori_extend_image_tag', 0, 8 );
 
 /**
- * Filter to add srcset attributes to post_thumbnails
+ * Filter to add srcset and sizes attributes to post_thumbnails and gallery images.
  *
- * @see 'post_thumbnail_html'
- * @return string HTML for image.
+ * @see 'wp_get_attachment_image_attributes'
+ * @return array attributes for image.
  */
-function tevkori_filter_post_thumbnail_html( $html, $post_id, $post_thumbnail_id, $size, $attr ) {
-	// if the HTML is empty, short circuit
-	if ( '' === $html ) {
-		return;
+function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size ) {
+    $attachment_id = $attachment->ID;
+    
+	if ( ! isset( $attr['sizes'] ) ) {
+		$sizes = tevkori_get_sizes( $attachment_id, $size );
+		// Build the sizes attribute if sizes were returned.
+		if ( $sizes ) {
+			$attr['sizes'] = $sizes;
+		}
 	}
-
-	$sizes = tevkori_get_sizes( $post_thumbnail_id, $size );
-	// Build the data-sizes attribute if sizes were returned.
-	if ( $sizes ) {
-		$sizes = 'sizes="' . $sizes . '"';
+	
+	if ( ! isset( $attr['srcset'] ) ) {
+		$srcset = tevkori_get_srcset( $attachment_id, $size );
+		$attr['srcset'] = $srcset;
 	}
-
-	$srcset = tevkori_get_srcset_string( $post_thumbnail_id, $size );
-	$html = preg_replace( '/(src\s*=\s*"(.+?)")/', '$1 ' . $sizes . ' ' . $srcset, $html );
-	return $html;
+	
+    return $attr;
 }
-add_filter( 'post_thumbnail_html', 'tevkori_filter_post_thumbnail_html', 0, 5);
+add_filter( 'wp_get_attachment_image_attributes', 'tevkori_filter_attachment_image_attributes', 0, 4 );
 
 /**
  * Disable the editor size constraint applied for images in TinyMCE.
@@ -299,3 +317,17 @@ function tevkori_filter_content_sizes( $content ) {
 	return $content;
 }
 add_filter('the_content', 'tevkori_filter_content_sizes');
+
+
+/**
+ * Filter to add php-respimg as an image editor
+ *
+ * @return array editors
+ **/
+function tevkori_wp_image_editors( $editors ) {
+	if ( current_theme_supports( 'advanced-image-compression' ) ) {
+		array_unshift( $editors, 'WP_Image_Editor_Respimg' );
+	}
+	return $editors;
+}
+add_filter('wp_image_editors', 'tevkori_wp_image_editors');
