@@ -88,7 +88,7 @@ Returns an array of image source candidates for use in a 'srcset' attribute. The
 $srcset = tevkori_get_srcset_array( 11, 'medium' );
 
 foreach( $srcset as $source ) {
- if ( false === strpos(' 900w', $source) ) {
+ if ( false === strpos($source, ' 900w') ) {
   $srcset[] = $source;
  }
 }
