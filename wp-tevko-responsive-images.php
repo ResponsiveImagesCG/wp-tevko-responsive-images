@@ -25,7 +25,7 @@ require_once plugin_dir_path( __FILE__ ) . 'class-wp-image-editor-respimg.php';
  * Enqueue bundled version of the Picturefill library.
  */
 function tevkori_get_picturefill() {
-	wp_enqueue_script( 'picturefill', plugins_url( 'js/picturefill.min.js', __FILE__ ), array(), '2.3.0', true );
+	wp_enqueue_script( 'picturefill', plugins_url( 'js/picturefill.min.js', __FILE__ ), array(), '2.3.1', true );
 }
 add_action( 'wp_enqueue_scripts', 'tevkori_get_picturefill' );
 
@@ -44,7 +44,7 @@ add_action( 'wp_enqueue_scripts', 'tevkori_get_picturefill' );
  * @return string|bool A valid source size value for use in a 'sizes' attribute or false.
  */
 function tevkori_get_sizes( $id, $size = 'thumbnail', $args = null ) {
-	
+
 	// See which image is being returned and bail if none is found.
 	if ( ! $img = image_downsize( $id, $size ) ) {
 		return false;
