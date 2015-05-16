@@ -21,6 +21,19 @@ No configuration is needed! Just install the plugin and enjoy automatic responsi
 
 This plugin includes several functions that can be used by theme and plugin developers in templates.
 
+###Advanced Image Compression
+
+**This is an experimental feature, if used, please provide us with feedback!**
+
+This feature turns on advanced compression, which will deliver higher quality images at a smaller file size. To enable, place the following code in your `functions.php` file - 
+```
+function custom_theme_setup() {
+	add_theme_support( 'advanced-image-compression' );
+}
+add_action( 'after_setup_theme', 'custom_theme_setup' );
+```
+---
+
 ####tevkori_get_sizes( $id, $size, $args )
 
 Returns a valid source size value for use in a 'sizes' attribute. The parameters include the ID of the image, the default size of the image, and an array or string containing of size information. The ID parameter is required. [Link](https://github.com/ResponsiveImagesCG/wp-tevko-responsive-images/blob/master/wp-tevko-responsive-images.php#L28)
@@ -84,17 +97,16 @@ Returns an array of image source candidates for use in a 'srcset' attribute. The
 ***Usage Example***
 
 ```
-
 $sources = tevkori_get_srcset_array( 11, 'medium' );
 
-$srcset = array();
-foreach( $srcset as $source ) {
- if ( false === strpos(' 900w', $source) {
-  $srcset[] = $source;
- }
+// Optionally remove a specific source from the srcset list.
+foreach( $sources as $key => $source ) {
+	if ( strpos( $source, '300w' ) ) {
+		unset( $s[$key] );
+	}
 }
 
-<img src="myimg.png" srcset="<?php implode( ', ', $srcset ); ?>" >
+<img src="myimg.png" srcset="<?php implode( ', ', $sources ); ?>" >
 ```
 
 ---
@@ -123,9 +135,14 @@ We use a hook because if you attempt to dequeue a script before it's enqueued, w
 
 ##Version
 
-2.2.1
+2.3.0
 
 ##Changelog
+
+- Improved performance of `get_srcset_array`
+- Added smart sizes option (available by adding hook to functions.php)
+
+**2.2.1**
 
 - JS patch for wordpress
 
