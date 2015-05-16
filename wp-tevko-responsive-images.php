@@ -156,13 +156,13 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 	// Get the image meta data.
 	$img_meta = wp_get_attachment_metadata( $id );
 
-	// Build an array with image sizes.
-	$img_sizes = $img_meta['sizes'];
-
 	// Test if there happens to be meta data, bail if none is found
-	if (is_array($image_meta)){
+	if (!is_array($image_meta)){
 		return false;
 	}
+
+	// Build an array with image sizes.
+	$img_sizes = $img_meta['sizes'];
 
 	// Add full size to the img_sizes array.
 	$img_sizes['full'] = array(
