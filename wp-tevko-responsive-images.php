@@ -182,7 +182,8 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 		$image_src = wp_get_attachment_image_src( $id, $key );
 		$arr[] = $image_src[0] . ' ' . $size['width'] .'w';
 	}
-
+	// remove any dupes http://stackoverflow.com/a/8321709/362445
+	$arr = array_keys(array_flip($arr));
 	return $arr;
 }
 
