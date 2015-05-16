@@ -30,7 +30,7 @@ add_action( 'wp_enqueue_scripts', 'tevkori_get_picturefill' );
  *
  * @since 2.2.0
  *
- * @param int $id 			Image attacment ID.
+ * @param int $id 			Image attachment ID.
  * @param string $size	Optional. Name of image size. Default value: 'thumbnail'.
  * @param array $args {
  *     Optional. Arguments to retrieve posts.
@@ -112,7 +112,7 @@ function tevkori_get_sizes( $id, $size = 'thumbnail', $args = null ) {
 *
 * @since 2.2.0
 *
-* @param int $id 			Image attacment ID.
+* @param int $id 			Image attachment ID.
 * @param string $size	Optional. Name of image size. Default value: 'thumbnail'.
 * @param array $args {
 *     Optional. Arguments to retrieve posts.
@@ -131,7 +131,7 @@ function tevkori_get_sizes_string( $id, $size = 'thumbnail', $args = null ) {
 /**
  * Get an array of image sources candidates for use in a 'srcset' attribute.
  *
- * @param int $id 			Image attacment ID.
+ * @param int $id 			Image attachment ID.
  * @param string $size	Optional. Name of image size. Default value: 'thumbnail'.
  * @return array|bool 	An array of of srcset values or false.
  */
@@ -182,14 +182,15 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 		$image_src = wp_get_attachment_image_src( $id, $key );
 		$arr[] = $image_src[0] . ' ' . $size['width'] .'w';
 	}
-
+	// remove any dupes http://stackoverflow.com/a/8321709/362445
+	$arr = array_keys(array_flip($arr));
 	return $arr;
 }
 
 /**
  * Create a 'srcset' attribute.
  *
- * @param int $id 			Image attacment ID.
+ * @param int $id 			Image attachment ID.
  * @param string $size	Optional. Name of image size. Default value: 'thumbnail'.
  * @return string|bool 	A full 'srcset' string or false.
  */
@@ -208,7 +209,7 @@ function tevkori_get_srcset_string( $id, $size = 'thumbnail' ) {
  * @deprecated Use tevkori_get_srcset_string
  * @see tevkori_get_srcset_string
  *
- * @param int $id 			Image attacment ID.
+ * @param int $id 			Image attachment ID.
  * @return string|bool 	A full 'srcset' string or false.
  */
 function tevkori_get_src_sizes( $id, $size = 'thumbnail' ) {
