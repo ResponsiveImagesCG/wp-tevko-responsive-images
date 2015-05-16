@@ -195,7 +195,7 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 
 	// remove any dupes http://stackoverflow.com/a/8321709/362445
 	$arr = array_keys(array_flip($arr));
-
+	
 	return $arr;
 }
 
