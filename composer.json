@@ -1,0 +1,10 @@
+{
+    "name"       : "ResponsiveImagesCG/wp-tevko-responsive-images",
+    "description": "Fully responsive image plugin for WordPress.",
+    "homepage"   : "https://github.com/ResponsiveImagesCG/wp-tevko-responsive-images",
+    "type"       : "wordpress-plugin",
+    "license"    : "GPL-2.0+",
+    "require"    : {
+        "composer/installers": "~1.0"
+    }
+}
