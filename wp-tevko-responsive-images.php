@@ -168,7 +168,7 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 	$img_sizes['full'] = array(
 		'width'  => $img_meta['width'],
 		'height' => $img_meta['height'],
-		'file'   => $img_meta['file'] 
+		'file'   => $img_meta['file']
 	);
 	if ( strrpos( $img_meta['file'], '/' ) !== false ) {
 		$img_sizes['full']['file'] = substr( $img_meta['file'], strrpos( $img_meta['file'], '/' ) + 1 );
@@ -258,7 +258,6 @@ function tevkori_get_src_sizes( $id, $size = 'thumbnail' ) {
  * @return string HTML for image.
  */
 function tevkori_extend_image_tag( $html, $id, $caption, $title, $align, $url, $size, $alt ) {
-	add_filter( 'editor_max_image_size', 'tevkori_editor_image_size' );
 
 	$img_meta = wp_get_attachment_metadata($id);
 
@@ -266,6 +265,8 @@ function tevkori_extend_image_tag( $html, $id, $caption, $title, $align, $url, $
 	if ( empty($img_meta['sizes']) ) {
 		return $html;
 	}
+
+	add_filter( 'editor_max_image_size', 'tevkori_editor_image_size' );
 
 	$sizes = tevkori_get_sizes( $id, $size );
 
