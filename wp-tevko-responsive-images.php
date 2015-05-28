@@ -260,6 +260,13 @@ function tevkori_get_src_sizes( $id, $size = 'thumbnail' ) {
 function tevkori_extend_image_tag( $html, $id, $caption, $title, $align, $url, $size, $alt ) {
 	add_filter( 'editor_max_image_size', 'tevkori_editor_image_size' );
 
+	$img_meta = wp_get_attachment_metadata($id);
+
+	// If there are no additional sizes of this image, return the HTML unaltered.
+	if ( empty($img_meta['sizes']) ) {
+		return $html;
+	}
+
 	$sizes = tevkori_get_sizes( $id, $size );
 
 	// Build the data-sizes attribute if sizes were returned.
@@ -286,6 +293,13 @@ add_filter( 'image_send_to_editor', 'tevkori_extend_image_tag', 0, 8 );
  */
 function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size ) {
 	$attachment_id = $attachment->ID;
+
+	$img_meta = wp_get_attachment_metadata($attachment_id);
+
+	// If there are no additional sizes of this image, return the HTML unaltered.
+	if ( empty($img_meta['sizes']) ) {
+		return $attr;
+	}
 
 	if ( ! isset( $attr['sizes'] ) ) {
 		$sizes = tevkori_get_sizes( $attachment_id, $size );
