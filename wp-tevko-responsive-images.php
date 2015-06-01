@@ -164,11 +164,6 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 	// Build an array with image sizes.
 	$img_sizes = $img_meta['sizes'];
 
-	// If the count of image sizes is less than 2, return false.
-	if ( 2 > count($img_sizes) ) {
-		return false;
-	}
-
 	// Add full size to the img_sizes array.
 	$img_sizes['full'] = array(
 		'width'  => $img_meta['width'],
@@ -197,8 +192,9 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 		}
 	}
 
-	if ( empty( $arr ) ) {
-		return false;
+	// If there is only one size, return false.
+	if ( 2 > count( $arr ) ) {
+	    return false;
 	}
 
 	return $arr;
