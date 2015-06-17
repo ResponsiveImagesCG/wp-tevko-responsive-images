@@ -201,7 +201,7 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 
 		// If the new ratio differs by less than 0.01, use it.
 		if ( abs( $img_ratio - $img_ratio_compare ) < 0.01 ) {
-			$arr[] = $img_base_url . $img['file'] . ' ' . $img['width'] .'w';
+			$arr[ $img['width'] ] = $img_base_url . $img['file'] . ' ' . $img['width'] .'w';
 		}
 	}
 

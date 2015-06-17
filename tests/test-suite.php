@@ -159,11 +159,11 @@ class SampleTest extends WP_UnitTestCase {
 		$filename_base = substr( $image['file'], 0, strrpos($image['file'], '.png') );
 
 		$expected = array(
-			'http://example.org/wp-content/uploads/' . $year_month = date('Y/m') . '/'
+			$image['sizes']['medium']['width'] => 'http://example.org/wp-content/uploads/' . $year_month = date('Y/m') . '/'
 				. $image['sizes']['medium']['file'] . ' ' . $image['sizes']['medium']['width'] . 'w',
-			'http://example.org/wp-content/uploads/' . $year_month = date('Y/m') . '/'
+			$image['sizes']['large']['width'] => 'http://example.org/wp-content/uploads/' . $year_month = date('Y/m') . '/'
 				. $image['sizes']['large']['file'] . ' ' . $image['sizes']['large']['width'] . 'w',
-			'http://example.org/wp-content/uploads/' . $image['file'] . ' ' . $image['width'] .'w'
+			$image['width'] => 'http://example.org/wp-content/uploads/' . $image['file'] . ' ' . $image['width'] .'w'
 		);
 
 		$this->assertSame( $expected, $sizes );
@@ -184,9 +184,9 @@ class SampleTest extends WP_UnitTestCase {
 		$filename_base = substr( $image['file'], 0, strrpos($image['file'], '.png') );
 
 		$expected = array(
-			'http://example.org/wp-content/uploads/' . $image['sizes']['medium']['file'] . ' ' . $image['sizes']['medium']['width'] . 'w',
-			'http://example.org/wp-content/uploads/' . $image['sizes']['large']['file'] . ' ' . $image['sizes']['large']['width'] . 'w',
-			'http://example.org/wp-content/uploads/' . $image['file'] . ' ' . $image['width'] .'w'
+			$image['sizes']['medium']['width'] => 'http://example.org/wp-content/uploads/' . $image['sizes']['medium']['file'] . ' ' . $image['sizes']['medium']['width'] . 'w',
+			$image['sizes']['large']['width'] => 'http://example.org/wp-content/uploads/' . $image['sizes']['large']['file'] . ' ' . $image['sizes']['large']['width'] . 'w',
+			$image['width'] => 'http://example.org/wp-content/uploads/' . $image['file'] . ' ' . $image['width'] .'w'
 		);
 
 		$this->assertSame( $expected, $sizes );
@@ -204,7 +204,7 @@ class SampleTest extends WP_UnitTestCase {
 
 		$year_month = date('Y/m');
 		$expected = array(
-			'http://example.org/wp-content/uploads/' . $year_month = date('Y/m') . '/'
+			$image['sizes']['thumbnail']['width'] => 'http://example.org/wp-content/uploads/' . $year_month = date('Y/m') . '/'
 				. $image['sizes']['thumbnail']['file'] . ' ' . $image['sizes']['thumbnail']['width'] . 'w',
 		);
 
