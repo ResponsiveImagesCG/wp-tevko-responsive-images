@@ -1,12 +1,5 @@
 <?php
-defined( 'ABSPATH' ) or die( "No script kiddies please!" );
-
 /**
- * @link              https://github.com/ResponsiveImagesCG/wp-tevko-responsive-images
- * @since             2.0.0
- * @package           http://www.smashingmagazine.com/2015/02/24/ricg-responsive-images-for-wordpress/
- *
- * @wordpress-plugin
  * Plugin Name:       RICG Responsive Images
  * Plugin URI:        http://www.smashingmagazine.com/2015/02/24/ricg-responsive-images-for-wordpress/
  * Description:       Bringing automatic default responsive images to wordpress
@@ -15,7 +8,13 @@ defined( 'ABSPATH' ) or die( "No script kiddies please!" );
  * Author URI:        http://responsiveimages.org/
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
+ * 
+ * @link              https://github.com/ResponsiveImagesCG/wp-tevko-responsive-images
+ * @since             2.0.0
+ * @package           http://www.smashingmagazine.com/2015/02/24/ricg-responsive-images-for-wordpress/
  */
+
+defined( 'ABSPATH' ) or die( "No script kiddies please!" );
 
 // List includes
 require_once plugin_dir_path( __FILE__ ) . 'class-respimg.php';
