@@ -181,7 +181,7 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 	$img_sizes['full'] = array(
 		'width'  => $img_meta['width'],
 		'height' => $img_meta['height'],
-		'file'   => $img_meta['file'] 
+		'file'   => $img_meta['file']
 	);
 	if ( strrpos( $img_meta['file'], '/' ) !== false ) {
 		$img_sizes['full']['file'] = substr( $img_meta['file'], strrpos( $img_meta['file'], '/' ) + 1 );
@@ -205,8 +205,9 @@ function tevkori_get_srcset_array( $id, $size = 'thumbnail' ) {
 		}
 	}
 
-	if ( empty( $arr ) ) {
-		return false;
+	// If there is only one size, return false.
+	if ( 2 > count( $arr ) ) {
+	    return false;
 	}
 
 	return $arr;
@@ -273,15 +274,20 @@ function tevkori_get_src_sizes( $id, $size = 'thumbnail' ) {
 function tevkori_extend_image_tag( $html, $id, $caption, $title, $align, $url, $size, $alt ) {
 	add_filter( 'editor_max_image_size', 'tevkori_editor_image_size' );
 
+	// Build the srcset attribute.
+	$srcset = tevkori_get_srcset_string( $id, $size );
+
+	// If the srcset is empty, return the HTML unaltered.
+	if ( '' == $srcset ) {
+		return $html;
+	}
+
 	$sizes = tevkori_get_sizes( $id, $size );
 
 	// Build the data-sizes attribute if sizes were returned.
 	if ( $sizes ) {
 		$sizes = 'data-sizes="' . $sizes . '"';
 	}
-
-	// Build the srcset attribute.
-	$srcset = tevkori_get_srcset_string( $id, $size );
 
 	remove_filter( 'editor_max_image_size', 'tevkori_editor_image_size' );
 
@@ -300,6 +306,16 @@ add_filter( 'image_send_to_editor', 'tevkori_extend_image_tag', 0, 8 );
 function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size ) {
 	$attachment_id = $attachment->ID;
 
+	if ( ! isset( $attr['srcset'] ) ) {
+		$srcset = tevkori_get_srcset( $attachment_id, $size );
+
+		if ( '' == $srcset ) {
+			return $attr;
+		}
+
+		$attr['srcset'] = $srcset;
+	}
+
 	if ( ! isset( $attr['sizes'] ) ) {
 		$sizes = tevkori_get_sizes( $attachment_id, $size );
 
@@ -307,11 +323,6 @@ function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size )
 		if ( $sizes ) {
 			$attr['sizes'] = $sizes;
 		}
-	}
-
-	if ( ! isset( $attr['srcset'] ) ) {
-		$srcset = tevkori_get_srcset( $attachment_id, $size );
-		$attr['srcset'] = $srcset;
 	}
 
 	return $attr;
