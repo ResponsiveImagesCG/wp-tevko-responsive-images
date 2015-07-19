@@ -273,19 +273,19 @@ function tevkori_get_src_sizes( $id, $size = 'thumbnail' ) {
 function tevkori_extend_image_tag( $html, $id, $caption, $title, $align, $url, $size, $alt ) {
 	add_filter( 'editor_max_image_size', 'tevkori_editor_image_size' );
 
-	$sizes = tevkori_get_sizes( $id, $size );
-
-	// Build the data-sizes attribute if sizes were returned.
-	if ( $sizes ) {
-		$sizes = 'data-sizes="' . $sizes . '"';
-	}
-
-	// Build the srcset attribute.
+	// Get the srcset attribute.
 	$srcset = tevkori_get_srcset_string( $id, $size );
 
 	remove_filter( 'editor_max_image_size', 'tevkori_editor_image_size' );
 
-	$html = preg_replace( '/(src\s*=\s*"(.+?)")/', '$1 ' . $sizes . ' ' . $srcset, $html );
+	if ( $srcset ) {
+		
+		// Build the data-sizes attribute if sizes were returned.
+		$sizes = tevkori_get_sizes( $id, $size );
+		$sizes = $sizes ? 'data-sizes="' . $sizes . '"' : '';
+		
+		$html = preg_replace( '/(src\s*=\s*"(.+?)")/', '$1 ' . $sizes . ' ' . $srcset, $html );
+	}
 
 	return $html;
 }
@@ -303,7 +303,7 @@ function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size )
 	if ( ! isset( $attr['sizes'] ) ) {
 		$sizes = tevkori_get_sizes( $attachment_id, $size );
 
-		// Build the sizes attribute if sizes were returned.
+		// Set the sizes attribute if sizes were returned.
 		if ( $sizes ) {
 			$attr['sizes'] = $sizes;
 		}
@@ -311,7 +311,11 @@ function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size )
 
 	if ( ! isset( $attr['srcset'] ) ) {
 		$srcset = tevkori_get_srcset( $attachment_id, $size );
-		$attr['srcset'] = $srcset;
+		
+		// Set the srcset attribute if one was returned.
+		if ( $srcset ) {
+			$attr['srcset'] = $srcset;
+		}
 	}
 
 	return $attr;
