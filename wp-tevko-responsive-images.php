@@ -300,24 +300,24 @@ add_filter( 'image_send_to_editor', 'tevkori_extend_image_tag', 0, 8 );
 function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size ) {
 	$attachment_id = $attachment->ID;
 
-	if ( ! isset( $attr['sizes'] ) ) {
-		$sizes = tevkori_get_sizes( $attachment_id, $size );
-
-		// Set the sizes attribute if sizes were returned.
-		if ( $sizes ) {
-			$attr['sizes'] = $sizes;
-		}
-	}
-
 	if ( ! isset( $attr['srcset'] ) ) {
 		$srcset = tevkori_get_srcset( $attachment_id, $size );
 		
-		// Set the srcset attribute if one was returned.
+		// Set the srcset attribute if a srcset was returned.
 		if ( $srcset ) {
 			$attr['srcset'] = $srcset;
+			
+			if ( ! isset( $attr['sizes'] ) ) {
+				$sizes = tevkori_get_sizes( $attachment_id, $size );
+
+				// Set the sizes attribute if sizes were returned.
+				if ( $sizes ) {
+					$attr['sizes'] = $sizes;
+				}
+			}
 		}
 	}
-
+	
 	return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'tevkori_filter_attachment_image_attributes', 0, 3 );
