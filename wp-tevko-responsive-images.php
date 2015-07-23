@@ -21,6 +21,10 @@ defined( 'ABSPATH' ) or die( "No script kiddies please!" );
 require_once plugin_dir_path( __FILE__ ) . 'class-respimg.php';
 require_once plugin_dir_path( __FILE__ ) . 'class-wp-image-editor-respimg.php';
 
+if ( defined('WP_CLI') && WP_CLI ) {
+	require_once( __DIR__ . '/class-cli-command.php' );
+}
+
 /**
  * Enqueue bundled version of the Picturefill library.
  */
