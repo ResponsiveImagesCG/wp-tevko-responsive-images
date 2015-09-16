@@ -370,4 +370,47 @@ class SampleTest extends WP_UnitTestCase {
 		$this->assertFalse( isset( $resp_attr['srcset'] ) );
 		$this->assertFalse( isset( $resp_attr['sizes'] ) );
 	}
+
+	/**
+	 * @group 170
+	 */
+	function test_tevkori_filter_content_images() {
+		// Make image.
+		$id = $this->_test_img();
+
+		$srcset = tevkori_get_srcset_string( $id, 'medium' );
+		$sizes = tevkori_get_sizes_string( $id, 'medium' );
+
+		// Function used to build HTML for the editor.
+		$img = get_image_tag( $id, '', '', '', 'medium' );
+
+		$respimg = preg_replace('/src="([^"]*)/', 'src="$1" ' . $srcset . ' ' . $sizes, $img);
+
+		$content = '<p>Welcome to WordPress!  This post contains important information.  After you read it, you can make it private to hide it from visitors but still have the information handy for future reference.</p>
+			<p>First things first:</p>
+			<ul>
+			<li><a href="http://wordpress.org" title="Subscribe to the WordPress mailing list for Release Notifications">Subscribe to the WordPress mailing list for release notifications</a></li>
+			</ul>
+
+			%1$s
+
+			<p>As a subscriber, you will receive an email every time an update is available (and only then).  This will make it easier to keep your site up to date, and secure from evildoers.<br />
+			When a new version is released, <a href="http://wordpress.org" title="If you are already logged in, this will take you directly to the Dashboard">log in to the Dashboard</a> and follow the instructions.<br />
+			Upgrading is a couple of clicks!</p>
+			<p>Then you can start enjoying the WordPress experience:</p>
+			<ul>
+			<li>Edit your personal information at <a href="http://wordpress.org" title="Edit settings like your password, your display name and your contact information">Users &#8250; Your Profile</a></li>
+			<li>Start publishing at <a href="http://wordpress.org" title="Create a new post">Posts &#8250; Add New</a> and at <a href="http://wordpress.org" title="Create a new page">Pages &#8250; Add New</a></li>
+			<li>Browse and install plugins at <a href="http://wordpress.org" title="Browse and install plugins at the official WordPress repository directly from your Dashboard">Plugins &#8250; Add New</a></li>
+			<li>Browse and install themes at <a href="http://wordpress.org" title="Browse and install themes at the official WordPress repository directly from your Dashboard">Appearance &#8250; Add New Themes</a></li>
+			<li>Modify and prettify your website&#8217;s links at <a href="http://wordpress.org" title="For example, select a link structure like: http://example.com/1999/12/post-name">Settings &#8250; Permalinks</a></li>
+			<li>Import content from another system or WordPress site at <a href="http://wordpress.org" title="WordPress comes with importers for the most common publishing systems">Tools &#8250; Import</a></li>
+			<li>Find answers to your questions at the <a href="http://wordpress.orgs" title="The official WordPress documentation, maintained by the WordPress community">WordPress Codex</a></li>
+			</ul>';
+
+		$content_unfiltered = sprintf( $content, $img );
+		$content_filtered = sprintf( $content, $respimg );
+
+		$this->assertSame( $content_filtered, tevkori_filter_content_images( $content_unfiltered ) );
+	}
 }
