@@ -18,9 +18,6 @@
 // Don't load the plugin directly
 defined( 'ABSPATH' ) or die( "No script kiddies please!" );
 
-// List includes
-require_once( plugin_dir_path( __FILE__ ) . 'class-srcset-callback.php' );
-
 if ( class_exists( 'Imagick' ) ) {
 	require_once( plugin_dir_path( __FILE__ ) . 'class-respimg.php' );
 	require_once( plugin_dir_path( __FILE__ ) . 'class-wp-image-editor-respimg.php' );
@@ -310,23 +307,87 @@ function tevkori_get_src_sizes( $id, $size = 'thumbnail' ) {
  * @param string $content The raw post content to be filtered.
  */
 function tevkori_filter_content_images( $content ) {
-	preg_match_all( '/src="([^"]*)"/', $content, $matches );
+	// Only match images in our uploads directory
+	$uploads_dir = wp_upload_dir();
+	$path_to_upload_dir = $uploads_dir['baseurl'];
 
-	$urls = array_pop( $matches );
+	$content = preg_replace_callback( '|<img ([^>]+' . $path_to_upload_dir . '[^>]+) />|', '_tevkori_filter_content_images_callback', $content );
 
-	$attachments = tevkori_attachment_urls_to_loop( $urls );
-
-	$content_filter = new WP_Ricg_Content_Filter( $attachments );
-	
-	return preg_replace_callback(
-		'/<img\s([^>]+)>/i',
-		
-		// Don't use an anonymous callback function because it isn't supported by PHP 5.2.
-		array( $content_filter, 'callback' ),
-		$content
-	);
+	return $content;
 }
 add_filter( 'the_content', 'tevkori_filter_content_images', 5, 1 );
+
+function _tevkori_filter_content_images_callback( $image ) {
+	list( $image_html, $atts ) = $image;
+	$id = $size = false;
+
+	// Grab ID and size info from core classes.
+	if ( preg_match( '/wp-image-([0-9]+)/i', $atts, $class_id ) ) {
+		$id = $class_id[1];
+	}
+	if ( preg_match( '/size-([^\s|"]+)/i', $atts, $class_size ) ) {
+		$size = $class_size[1];
+	}
+
+	if ( $id && false === $size ) {
+		preg_match( '/width="([0-9]+)"/', $atts, $width );
+		preg_match( '/height="([0-9]+)"/', $atts, $height );
+
+		$size = array(
+			(int) $width[1],
+			(int) $height[1]
+		);
+	}
+
+	// If attempts to get values for `id` and `size` failed, use the
+	// src to query for matching values in `_wp_attachment_metadata`
+	if ( false === $id || false === $size ) {
+		preg_match( '/src="([^"]+)"/', $atts, $url );
+
+		if ( ! $url[1] ) {
+			return $image_html;
+		}
+
+		$image_filename = basename( $url[1] );
+
+		// Query the DB to get the post id and meta values for any attachment
+		// containing the file name of our url.
+		global $wpdb;
+		$meta_object = $wpdb->get_row( $wpdb->prepare(
+			"SELECT `post_id`, `meta_value` FROM $wpdb->postmeta WHERE `meta_key` = '_wp_attachment_metadata' AND `meta_value` LIKE %s",
+			'%' . $image_filename . '%'
+		) );
+
+		// If the query is successful, we can determine the ID and size.
+		if ( is_object( $meta_object ) ) {
+			$id = $meta_object->post_id;
+			// Unserialize the meta_value returned in our query.
+			$meta = maybe_unserialize( $meta_object->meta_value );
+
+			// If the file name is the full size image, just use that.
+			if ( $image_filename === basename( $meta['file'] ) ) {
+				$size = 'full';
+			} else {
+				// Otherwise, we loop through the sizes until we find the one whose
+				// file name matches the file name of our image.
+				foreach( $meta['sizes'] as $image_size => $image_size_data ) {
+					if ( $image_filename === $image_size_data['file'] ) {
+						$size = $image_size;
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	// If we have an ID and size, try for srcset and sizes and update the markup.
+	if ( $id && $size && $srcset = tevkori_get_srcset_string( $id, $size ) ) {
+		$sizes = tevkori_get_sizes_string( $id, $size );
+		$image_html = "<img " . $atts . " " . $srcset . " " . $sizes . " />";
+	};
+
+	return $image_html;
+}
 
 /**
  * Filter to add srcset and sizes attributes to post thumbnails and gallery images.
@@ -356,57 +417,3 @@ function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size )
 	return $attr;
 }
 add_filter( 'wp_get_attachment_image_attributes', 'tevkori_filter_attachment_image_attributes', 0, 3 );
-
-/**
- * Convert multiple attachement URLs to thier ID.
- *
- * @since 3.0
- *
- * @return array IDs.
- **/
-function tevkori_attachment_urls_to_loop( $urls ) {
-	global $wpdb; 
-
-	if ( is_string( $urls ) ) {
-		return tevkori_attachment_urls_to_loop( array( $urls ) );
-	}
-	
-	if ( ! is_array( $urls ) ) {
-		$urls = array();
-	}
-
-	$dir = wp_upload_dir();
-	$paths = $urls;
-
-	$site_url = parse_url( $dir['url'] );
-
-	foreach ( $paths as $k => $path ) {
-		$image_path = parse_url( $path );
-
-		// Force the protocols to match if needed.
-		if ( isset( $image_path['scheme'] ) && ( $image_path['scheme'] !== $site_url['scheme'] ) ) {
-			$path = str_replace( $image_path['scheme'], $site_url['scheme'], $path );
-		}
-
-		if ( 0 === strpos( $path, $dir['baseurl'] . '/' ) ) {
-			$path = substr( $path, strlen( $dir['baseurl'] . '/' ) );
-		}
-
-		$paths[$k] = $path;
-	}
-
-	$attachments = new WP_Query(array(
-		'post_type'  => 'attachment',
-		'meta_query' => array(
-			array(
-				'key'     => '_wp_attached_file',
-				'value'   => $paths,
-				'compare' => 'in'
-			),
-		),
-		'posts_per_page' => '-1',
-		'post_status' => 'inherit',
-	));
-	
-	return $attachments;
-}
