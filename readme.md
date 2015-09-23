@@ -139,9 +139,19 @@ The only external dependency included in this plugin is [Picturefill](http://sco
 We use a hook because if you attempt to dequeue a script before it's enqueued, wp_dequeue_script has no effect. (If it's still being loaded, you may need to specify a [priority](http://codex.wordpress.org/Function_Reference/add_action).)
 
 ## Version
-2.4.0
+
+2.5.0
 
 ## Changelog
+
+- Responsify all post images by adding `srcset` and `sizes` through a display filter.
+- Improve method used to build paths in `tevkori_get_srcset_array()`
+- Adds linthub config files
+- Returns single source arrays in `tevkori_get_srcset_array()`
+- Add tests for PHP7 to our Travis matrix
+- Add test coverage for `tevkori_filter_attachment_image_attributes()` 
+
+**2.4.0**
 
 - Added filter for tevkori_get_sizes, with tests
 - Added Composer support
