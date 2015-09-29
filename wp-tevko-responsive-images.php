@@ -44,9 +44,29 @@ if ( class_exists( 'Imagick' ) ) {
  * Enqueue bundled version of the Picturefill library.
  */
 function tevkori_get_picturefill() {
-	wp_enqueue_script( 'picturefill', plugins_url( 'js/picturefill.min.js', __FILE__ ), array(), '2.3.1', true );
+	$picturefill_version = '2.3.1';
+	$picturefill_source = plugins_url( 'js/picturefill.min.js', __FILE__ );
+	$picturefill_source = add_query_arg( array(
+		'ver' => $picturefill_version,
+	), $picturefill_source );
+
+	/** This filter is documented in wp-includes/class.wp-scripts.php */
+	$picturefill_source = apply_filters( 'script_loader_src', $picturefill_source, 'picturefill' );
+
+	$settings = array(
+		'picturefillSource' => $picturefill_source,
+	);
+
+	$feature_check_source = plugin_dir_path( __FILE__ ) . 'js/srcset-feature-check.js';
+
+	?>
+	<script type='text/javascript'>
+		window._wpResponsiveImagesSettings = <?php echo wp_json_encode( $settings ); ?>;
+		<?php readfile( $feature_check_source ); ?>
+	</script>
+	<?php
 }
-add_action( 'wp_enqueue_scripts', 'tevkori_get_picturefill' );
+add_action( 'wp_head', 'tevkori_get_picturefill' );
 
 /**
  * Return a source size attribute for an image from an array of values.
