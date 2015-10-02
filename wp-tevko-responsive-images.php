@@ -307,6 +307,7 @@ function tevkori_filter_content_images( $content ) {
 
 	// Pattern for matching all images with a `src` from the uploads directory.
 	$pattern = '|<img ([^>]+' . preg_quote( $path_to_upload_dir ) . '[^>]+)>|i';
+	$pattern = apply_filters( 'tevkori_search_images_pattern	', $pattern );
 	preg_match_all( $pattern, $content, $matches );
 
 	$images = $matches[0];
@@ -325,25 +326,21 @@ function tevkori_filter_content_images( $content ) {
 		/**
 		 * Warm object caches for use with wp_get_attachment_metadata.
 		 *
-		 * To avoid making a database call for each image, WP_Query is called
-		 * as a single query with the IDs of all images in the post. This warms
-		 * the object cache with the meta information for all images.
-		 *
-		 * This loop is not used directly.
+		 * To avoid making a database call for each image, a single query
+		 * warms the object cache with the meta information for all images.
 		 **/
-		$attachments = new WP_Query(array(
-			'post_type'  => 'attachment',
-			'posts_per_page' => '-1',
-			'post_status' => 'inherit',
-			'post__in' => $ids,
-		));
+		_prime_post_caches( $ids, false, true );
 	}
 
-	$content = preg_replace_callback(
-		$pattern,
-		'_tevkori_filter_content_images_callback',
-		$content
-	);
+	foreach( $matches[0] as $k => $image ) {
+		$match = array( $image, $matches[1][$k] );
+		$needle = $image;
+		$replacement = _tevkori_filter_content_images_callback( $match );
+		if ( false === $replacement ) {
+			continue;
+		}
+		$content = str_replace( $image, $replacement, $content );
+	}
 
 	return $content;
 }
