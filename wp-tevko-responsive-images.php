@@ -61,14 +61,16 @@ add_action( 'wp_enqueue_scripts', 'tevkori_get_picturefill' );
  *     @type array|string $sizes An array or string containing of size information.
  *     @type int          $width A single width value used in the default `sizes` string.
  * }
+ * @param array  $img  Optional. The array returned by 'image_get_intermediate_size'.
  * @return string|bool A valid source size value for use in a 'sizes' attribute or false.
  */
-function tevkori_get_sizes( $id, $size = 'medium', $args = null ) {
+function tevkori_get_sizes( $id, $size = 'medium', $args = null, $img = false ) {
 	// Try to get the image width from `$args` first.
 	if ( is_array( $args ) && ! empty( $args['width'] ) ) {
 		$img_width = (int) $args['width'];
-	} elseif ( $img = image_get_intermediate_size( $id, $size ) ) {
-		list( $img_width, $img_height ) = image_constrain_size_for_editor( $img['width'], $img['height'], $size );
+	} else {
+		$image = ( $img ) ? $img : image_get_intermediate_size( $id, $size );
+		list( $img_width, $img_height ) = image_constrain_size_for_editor( $image['width'], $image['height'], $size );
 	}
 
 	// Bail early if `$image_width` isn't set.
@@ -162,10 +164,11 @@ function tevkori_get_sizes( $id, $size = 'medium', $args = null ) {
  *     @type array|string $sizes An array or string containing of size information.
  *     @type int          $width A single width value used in the default `sizes` string.
  * }
+ * @param array  $img  Optional. The array returned by 'image_get_intermediate_size'.
  * @return string|bool A valid source size list as a 'sizes' attribute or false.
  */
-function tevkori_get_sizes_string( $id, $size = 'medium', $args = null ) {
-	$sizes = tevkori_get_sizes( $id, $size, $args );
+function tevkori_get_sizes_string( $id, $size = 'medium', $args = null, $img = false ) {
+	$sizes = tevkori_get_sizes( $id, $size, $args, $img );
 
 	return $sizes ? 'sizes="' . $sizes . '"' : false;
 }
@@ -175,15 +178,17 @@ function tevkori_get_sizes_string( $id, $size = 'medium', $args = null ) {
  *
  * @param int    $id   Image attachment ID.
  * @param string $size Optional. Name of image size. Default value: 'medium'.
+ * @param array  $img  Optional. The array returned by 'image_get_intermediate_size'.
+ * @param array  $meta Optional. The array returned by 'wp_get_attachment_metadata'.
  * @return array|bool  An array of `srcset` values or false.
  */
-function tevkori_get_srcset_array( $id, $size = 'medium' ) {
+function tevkori_get_srcset_array( $id, $size = 'medium', $img = false, $meta = false ) {
 	$arr = array();
 
 	// Get the intermediate size.
-	$image = image_get_intermediate_size( $id, $size );
+	$image = ( $img ) ? $img : image_get_intermediate_size( $id, $size );
 	// Get the post meta.
-	if ( ! is_array( $img_meta = wp_get_attachment_metadata( $id ) ) ) {
+	if ( ! is_array( $img_meta = ( $meta ) ? $meta : wp_get_attachment_metadata( $id ) ) ) {
 		return false;
 	}
 
@@ -228,19 +233,19 @@ function tevkori_get_srcset_array( $id, $size = 'medium' ) {
 	 * Loop through available images and only use images that are resized
 	 * versions of the same rendition.
 	 */
-	foreach ( $img_sizes as $img ) {
+	foreach ( $img_sizes as $img_size ) {
 
 		// Filter out images that are leftovers from previous renditions.
-		if ( $img_edited && ! strpos( $img['file'], $img_edit_hash[0] ) ) {
+		if ( $img_edited && ! strpos( $img_size['file'], $img_edit_hash[0] ) ) {
 			continue;
 		}
 
 		// Calculate the new image ratio.
-		$img_ratio_compare = $img['height'] / $img['width'];
+		$img_ratio_compare = $img_size['height'] / $img_size['width'];
 
 		// If the new ratio differs by less than 0.01, use it.
 		if ( abs( $img_ratio - $img_ratio_compare ) < 0.01 ) {
-			$arr[ $img['width'] ] = path_join( dirname( $img_url ), $img['file'] ) . ' ' . $img['width'] .'w';
+			$arr[ $img_size['width'] ] = path_join( dirname( $img_url ), $img_size['file'] ) . ' ' . $img_size['width'] .'w';
 		}
 	}
 
@@ -263,10 +268,12 @@ function tevkori_get_srcset_array( $id, $size = 'medium' ) {
  *
  * @param int    $id   Image attachment ID.
  * @param string $size Optional. Name of image size. Default value: 'medium'.
+ * @param array  $img  Optional. The array returned by 'image_get_intermediate_size'.
+ * @param array  $meta Optional. The array returned by 'wp_get_attachment_metadata'.
  * @return string|bool A 'srcset' value string or false.
  */
-function tevkori_get_srcset( $id, $size = 'medium' ) {
-	$srcset_array = tevkori_get_srcset_array( $id, $size );
+function tevkori_get_srcset( $id, $size = 'medium', $img = false, $meta = false ) {
+	$srcset_array = tevkori_get_srcset_array( $id, $size, $img, $meta );
 
 	if ( count( $srcset_array ) <= 1 ) {
 		return false;
@@ -282,10 +289,12 @@ function tevkori_get_srcset( $id, $size = 'medium' ) {
  *
  * @param int    $id   Image attachment ID.
  * @param string $size Optional. Name of image size. Default value: 'medium'.
+ * @param array  $img  Optional. The array returned by 'image_get_intermediate_size'.
+ * @param array  $meta Optional. The array returned by 'wp_get_attachment_metadata'.
  * @return string|bool A full 'srcset' string or false.
  */
-function tevkori_get_srcset_string( $id, $size = 'medium' ) {
-	$srcset_value = tevkori_get_srcset( $id, $size );
+function tevkori_get_srcset_string( $id, $size = 'medium', $img = false, $meta = false ) {
+	$srcset_value = tevkori_get_srcset( $id, $size, $img, $meta );
 
 	if ( empty( $srcset_value ) ) {
 		return false;
@@ -369,6 +378,8 @@ function tevkori_img_add_srcset_and_sizes( $image ) {
 	 * If attempts to parse the size value failed, attempt to use the image
 	 * metadata to match the 'src' against the available sizes for an attachment.
 	 */
+	$meta = false;
+	
 	if ( ! $size && ! empty( $id ) && is_array( $meta = wp_get_attachment_metadata( $id ) ) ) {
 		// Parse the image 'src' value from the 'img' element.
 		$src = preg_match( '/src="([^"]+)"/', $image, $match_src ) ? $match_src[1] : false;
@@ -398,23 +409,29 @@ function tevkori_img_add_srcset_and_sizes( $image ) {
 	}
 
 	// If we have an ID and size, try for 'srcset' and 'sizes' and update the markup.
-	if ( $id && $size && $srcset = tevkori_get_srcset( $id, $size ) ) {
+	if ( $id && $size ) {
+		// Get the intermediate size.
+		$img = image_get_intermediate_size( $id, $size );
+		
+		if ( $img ) {
+			$srcset = tevkori_get_srcset( $id, $size, $img, $meta );
 
-		/**
-		 * Pass the 'height' and 'width' to 'tevkori_get_sizes()' to avoid
-		 * recalculating the image size.
-		 */
-		$args = array(
-			'height' => $height,
-			'width'  => $width,
-		);
-		$sizes = tevkori_get_sizes( $id, $size, $args );
+			/**
+			 * Pass the 'height' and 'width' to 'wp_get_attachment_image_sizes()' to avoid
+			 * recalculating the image size.
+			 */
+			$args = array(
+				'height' => $height,
+				'width'  => $width,
+			);
+			$sizes = tevkori_get_sizes( $id, $size, $args, $img );
 
-		// Format the srcset and sizes string and escape attributes.
-		$srcset_and_sizes = sprintf( ' srcset="%s" sizes="%s"', esc_attr( $srcset ), esc_attr( $sizes) );
+			// Format the srcset and sizes string and escape attributes.
+			$srcset_and_sizes = sprintf( ' srcset="%s" sizes="%s"', esc_attr( $srcset ), esc_attr( $sizes) );
 
-		// Add srcset and sizes attributes to the image markup.
-		$image = preg_replace( '/<img ([^>]+)[\s?][\/?]>/', '<img $1' . $srcset_and_sizes . ' />', $image );
+			// Add srcset and sizes attributes to the image markup.
+			$image = preg_replace( '/<img ([^>]+)[\s?][\/?]>/', '<img $1' . $srcset_and_sizes . ' />', $image );
+		}
 	};
 
 	return $image;
@@ -428,18 +445,25 @@ function tevkori_img_add_srcset_and_sizes( $image ) {
  */
 function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size ) {
 	if ( ! isset( $attr['srcset'] ) ) {
-		$srcset = tevkori_get_srcset( $attachment->ID, $size );
+		$id = $attachment->ID;
+		
+		// Get the intermediate size.
+		$img = image_get_intermediate_size( $id, $size );
+		
+		if ( $img ) {
+			$srcset = tevkori_get_srcset( $id, $size, $img );
 
-		// Set the 'srcset' attribute if one was returned.
-		if ( $srcset ) {
-			$attr['srcset'] = $srcset;
+			// Set the 'srcset' attribute if one was returned.
+			if ( $srcset ) {
+				$attr['srcset'] = $srcset;
 
-			if ( ! isset( $attr['sizes'] ) ) {
-				$sizes = tevkori_get_sizes( $attachment->ID, $size );
+				if ( ! isset( $attr['sizes'] ) ) {
+					$sizes = tevkori_get_sizes( $id, $size, $img );
 
-				// Set the 'sizes' attribute if sizes were returned.
-				if ( $sizes ) {
-					$attr['sizes'] = $sizes;
+					// Set the 'sizes' attribute if sizes were returned.
+					if ( $sizes ) {
+						$attr['sizes'] = $sizes;
+					}
 				}
 			}
 		}
