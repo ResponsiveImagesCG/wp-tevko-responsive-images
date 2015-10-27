@@ -40,9 +40,7 @@ if ( class_exists( 'Imagick' ) ) {
 	add_filter( 'wp_image_editors', 'tevkori_wp_image_editors' );
 }
 
-/**
- * Enqueue bundled version of the Picturefill library.
- */
+// Enqueue bundled version of the Picturefill library.
 function tevkori_get_picturefill() {
 	wp_enqueue_script( 'picturefill', plugins_url( 'js/picturefill.min.js', __FILE__ ), array(), '3.0.1', true );
 }
@@ -53,25 +51,26 @@ add_action( 'wp_enqueue_scripts', 'tevkori_get_picturefill' );
  *
  * @since 2.2.0
  *
- * @param int    $id   Image attachment ID.
- * @param string $size Optional. Name of image size. Default value: 'medium'.
- * @param array  $args {
+ * @param int          $id   Image attachment ID.
+ * @param array|string $size Image size. Accepts any valid image size, or an array of width and height
+ *                           values in pixels (in that order). Default 'medium'.
+ * @param array        $args {
  *     Optional. Arguments to retrieve posts.
  *
  *     @type array|string $sizes An array or string containing of size information.
- *     @type int          $width A single width value used in the default `sizes` string.
+ *     @type int          $width A single width value used in the default 'sizes' string.
  * }
  * @return string|bool A valid source size value for use in a 'sizes' attribute or false.
  */
 function tevkori_get_sizes( $id, $size = 'medium', $args = null ) {
-	// Try to get the image width from `$args` first.
+	// Try to get the image width from '$args' first.
 	if ( is_array( $args ) && ! empty( $args['width'] ) ) {
 		$img_width = (int) $args['width'];
 	} elseif ( $img = image_get_intermediate_size( $id, $size ) ) {
 		list( $img_width, $img_height ) = image_constrain_size_for_editor( $img['width'], $img['height'], $size );
 	}
 
-	// Bail early if `$image_width` isn't set.
+	// Bail early if '$img_width' isn't set.
 	if ( ! $img_width ) {
 		return false;
 	}
@@ -100,9 +99,10 @@ function tevkori_get_sizes( $id, $size = 'medium', $args = null ) {
 	*
 	* @since 2.4.0
 	*
-	* @param array   $args  An array of arguments used to create a 'sizes' attribute.
-	* @param int     $id    Post ID of the original image.
-	* @param string  $size  Name of the image size being used.
+	* @param array        $args An array of arguments used to create a 'sizes' attribute.
+	* @param int          $id   Post ID of the original image.
+	* @param array|string $size Image size. Image size or an array of width and height
+	*                           values in pixels (in that order).
 	*/
 	$args = apply_filters( 'tevkori_image_sizes_args', $args, $id, $size );
 
@@ -128,12 +128,12 @@ function tevkori_get_sizes( $id, $size = 'medium', $args = null ) {
 				// Use max-width as the media condition unless min-width is specified.
 				$media_condition = ( ! empty( $size['mq_name'] ) ) ? $size['mq_name'] : 'max-width';
 
-				// If a media_length was set, create the media query.
+				// If a media length was set, create the media query.
 				$media_query = '(' . $media_condition . ": " . $media_length . ') ';
 
 			} else {
 
-				// If not meda length was set, $media_query is blank.
+				// If no media length was set, '$media_query' is blank.
 				$media_query = '';
 			}
 
@@ -145,7 +145,7 @@ function tevkori_get_sizes( $id, $size = 'medium', $args = null ) {
 		$size_list = substr( $size_list, 0, -2 );
 	}
 
-	// If $size_list is defined set the string, otherwise set false.
+	// If '$size_list' is defined set the string, otherwise set false.
 	return ( $size_list ) ? $size_list : false;
 }
 
@@ -154,13 +154,14 @@ function tevkori_get_sizes( $id, $size = 'medium', $args = null ) {
  *
  * @since 2.2.0
  *
- * @param int    $id   Image attachment ID.
- * @param string $size Optional. Name of image size. Default value: 'medium'.
- * @param array  $args {
+ * @param int          $id   Image attachment ID.
+ * @param array|string $size Image size. Accepts any valid image size, or an array of width and height
+ *                           values in pixels (in that order). Default 'medium'.
+ * @param array        $args {
  *     Optional. Arguments to retrieve posts.
  *
  *     @type array|string $sizes An array or string containing of size information.
- *     @type int          $width A single width value used in the default `sizes` string.
+ *     @type int          $width A single width value used in the default 'sizes' string.
  * }
  * @return string|bool A valid source size list as a 'sizes' attribute or false.
  */
@@ -173,9 +174,12 @@ function tevkori_get_sizes_string( $id, $size = 'medium', $args = null ) {
 /**
  * Returns an array of image sources for a 'srcset' attribute.
  *
- * @param int    $id   Image attachment ID.
- * @param string $size Optional. Name of image size. Default value: 'medium'.
- * @return array|bool  An array of `srcset` values or false.
+ * @since 2.1.0
+ *
+ * @param int          $id   Image attachment ID.
+ * @param array|string $size Image size. Accepts any valid image size, or an array of width and height
+ *                           values in pixels (in that order). Default 'medium'.
+ * @return array|bool An array of 'srcset' values or false.
  */
 function tevkori_get_srcset_array( $id, $size = 'medium' ) {
 	$arr = array();
@@ -191,12 +195,12 @@ function tevkori_get_srcset_array( $id, $size = 'medium' ) {
 	$img_width = ( $image ) ? $image['width'] : $img_meta['width'];
 	$img_height = ( $image ) ? $image['height'] : $img_meta['height'];
 
-	// Bail early if the width isn't greater that zero.
+	// Bail early if the width isn't greater than zero.
 	if ( ! $img_width > 0 ) {
 		return false;
 	}
 
-	// Use the url from the intermediate size or build the url from the metadata.
+	// Use the URL from the intermediate size or build the URL from the metadata.
 	if ( ! empty( $image['url'] ) ) {
 		$img_url = $image['url'];
 	} else {
@@ -207,7 +211,7 @@ function tevkori_get_srcset_array( $id, $size = 'medium' ) {
 
 	$img_sizes = $img_meta['sizes'];
 
-	// Add full size to the img_sizes array.
+	// Add full size to the '$img_sizes' array.
 	$img_sizes['full'] = array(
 		'width'  => $img_meta['width'],
 		'height' => $img_meta['height'],
@@ -251,7 +255,8 @@ function tevkori_get_srcset_array( $id, $size = 'medium' ) {
 	 *
 	 * @param array        $arr   An array of image sources.
 	 * @param int          $id    Attachment ID for image.
-	 * @param array|string $size  Size of image, either array or string.
+	 * @param array|string $size  Image size. Image size or an array of width and height
+	 *                            values in pixels (in that order).
 	 */
 	return apply_filters( 'tevkori_srcset_array', $arr, $id, $size );
 }
@@ -261,8 +266,9 @@ function tevkori_get_srcset_array( $id, $size = 'medium' ) {
  *
  * @since 2.3.0
  *
- * @param int    $id   Image attachment ID.
- * @param string $size Optional. Name of image size. Default value: 'medium'.
+ * @param int          $id   Image attachment ID.
+ * @param array|string $size Image size. Accepts any valid image size, or an array of width and height
+ *                           values in pixels (in that order). Default 'medium'.
  * @return string|bool A 'srcset' value string or false.
  */
 function tevkori_get_srcset( $id, $size = 'medium' ) {
@@ -280,8 +286,9 @@ function tevkori_get_srcset( $id, $size = 'medium' ) {
  *
  * @since 2.1.0
  *
- * @param int    $id   Image attachment ID.
- * @param string $size Optional. Name of image size. Default value: 'medium'.
+ * @param int          $id   Image attachment ID.
+ * @param array|string $size Image size. Accepts any valid image size, or an array of width and height
+ *                           values in pixels (in that order). Default 'medium'.
  * @return string|bool A full 'srcset' string or false.
  */
 function tevkori_get_srcset_string( $id, $size = 'medium' ) {
@@ -423,7 +430,7 @@ function tevkori_img_add_srcset_and_sizes( $image ) {
 /**
  * Filter to add 'srcset' and 'sizes' attributes to post thumbnails and gallery images.
  *
- * @see wp_get_attachment_image_attributes
+ * @see 'wp_get_attachment_image_attributes'
  * @return array Attributes for image.
  */
 function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size ) {
