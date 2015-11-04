@@ -40,6 +40,10 @@ if ( class_exists( 'Imagick' ) ) {
 	add_filter( 'wp_image_editors', 'tevkori_wp_image_editors' );
 }
 
+if ( defined('WP_CLI') && WP_CLI ) {
+	require_once( __DIR__ . '/class-cli-command.php' );
+}
+
 /**
  * Enqueue bundled version of the Picturefill library.
  */
