@@ -61,6 +61,8 @@ class RICG_Responsive_Images_Tests extends WP_UnitTestCase {
 		foreach( $intermediates as $int ) {
 			$width = get_option( $int . '_size_w' );
 
+			$width = ( $width <= $content_width ) ? $width : $content_width;
+
 			$expected = '(max-width: ' . $width . 'px) 100vw, ' . $width . 'px';
 			$sizes = tevkori_get_sizes( $id, $int );
 
@@ -497,5 +499,45 @@ class RICG_Responsive_Images_Tests extends WP_UnitTestCase {
 		// The content filter should return the image unchanged.
 		$this->assertSame( $image_html, tevkori_filter_content_images( $image_html ) );
 	}
+
+	function test_wp_calculate_image_srcset_animated_gifs() {
+	// Mock meta for an animated gif.
+	$image_meta = array(
+		'width' => 1200,
+		'height' => 600,
+		'file' => 'animated.gif',
+		'sizes' => array(
+			'thumbnail' => array(
+				'file' => 'animated-150x150.gif',
+				'width' => 150,
+				'height' => 150,
+				'mime-type' => 'image/gif'
+			),
+			'medium' => array(
+				'file' => 'animated-300x150.gif',
+				'width' => 300,
+				'height' => 150,
+				'mime-type' => 'image/gif'
+			),
+			'large' => array(
+				'file' => 'animated-1024x512.gif',
+				'width' => 1024,
+				'height' => 512,
+				'mime-type' => 'image/gif'
+			),
+		)
+	);
+
+	$full_src  = 'http://example.org/wp-content/uploads/' . $image_meta['file'];
+	$large_src = 'http://example.org/wp-content/uploads/' . $image_meta['sizes']['large']['file'];
+
+	// Test with soft resized size array.
+	$size_array = array(900, 450);
+
+	// Full size GIFs should not return a srcset.
+	$this->assertFalse( wp_calculate_image_srcset( $full_src, $size_array, $image_meta ) );
+	// Intermediate sized GIFs should not include the full size in the srcset.
+	$this->assertFalse( strpos( wp_calculate_image_srcset( $large_src, $size_array, $image_meta ), $full_src ) );
+}
 
 }

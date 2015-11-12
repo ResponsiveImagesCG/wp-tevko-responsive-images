@@ -207,7 +207,7 @@ function tevkori_get_sizes( $id, $size = 'medium', $args = null ) {
 		// If '$size_list' is defined set the string, otherwise set false.
 		return ( $size_list ) ? $size_list : false;
 	} else {
-		return wp_get_attachment_image_sizes( $size, $image_meta = null, $id );
+		return wp_get_attachment_image_sizes( $id, $size );
 	}
 }
 
@@ -235,7 +235,7 @@ function tevkori_get_sizes_string( $id, $size = 'medium', $args = null ) {
 	if ( $args || has_filter( 'tevkori_image_sizes_args' ) ) {
 		$sizes = tevkori_get_sizes( $id, $size, $args );
 	} else {
-		$sizes = wp_get_attachment_image_sizes( $size, $image_meta = null, $id );
+		$sizes = wp_get_attachment_image_sizes( $id, $size );
 	}
 
 	return $sizes ? 'sizes="' . esc_attr( $sizes ) . '"' : false;
@@ -268,7 +268,7 @@ function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size )
 	// Set 'srcset' and 'sizes' if not already present and both were returned.
 	if ( empty( $attr['srcset'] ) ) {
 		$srcset = wp_get_attachment_image_srcset( $attachment->ID, $size );
-		$sizes  = wp_get_attachment_image_sizes( $size, $image_meta = null, $attachment->ID );
+		$sizes  = wp_get_attachment_image_sizes( $attachment->ID, $size );
 
 		if ( $srcset && $sizes ) {
 			$attr['srcset'] = $srcset;
