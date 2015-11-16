@@ -315,6 +315,37 @@ Image attachment ID of the original image or 0.
 
 ---
 
+### Backward Compatibility
+
+The following filters are used for backward compatibility. If the described case is not applicable you may want to remove the filter from its hook.
+
+#### data-sizes
+
+Prior to version 2.5 a `srcset` and `data-sizes` attribute were added to the image while inserting the image in the content and we used a content filter to replace `data-sizes` by `sizes`. As from 2.5 both `srcset` and `sizes` are added to images using a content filter, but images that already have a `srcset` attribute are skipped. For this reason we still replace `data-sizes` by `sizes`.
+If you did not use the plugin before version 2.5 or if you have removed `data-sizes` from your content you can remove the filter:
+
+```
+remove_filter( 'the_content', 'tevkori_replace_data_sizes' );
+```
+
+#### tevkori_get_sizes() $args param and filter
+
+The deprecated function `tevkori_get_sizes()` had an `$args` param and a `tevkori_image_sizes_args` filter. To make those still work we added a shim. If you do not use `tevkori_get_sizes()` in your templates, or at least not pass an argument to the `$args` param, and if you don't use the deprecated `tevkori_image_sizes_args` filter hook, you can remove the filter:
+
+```
+remove_filter( 'wp_calculate_image_sizes', '_tevkori_image_sizes_args_shim', 1, 5 );
+```
+
+#### wp_get_attachment_image_sizes filter
+
+In version 3.0 we introduced a new filter: `wp_get_attachment_image_sizes`. In version 3.1 this has been replaced by `wp_calculate_image_sizes`. If you don't use the `wp_get_attachment_image_sizes` filter you can remove the filter that has been added for backward compatibility:
+
+```
+remove_filter( 'wp_calculate_image_sizes', 'wp_get_attachment_image_sizes_filter_shim', 10, 5 );
+```
+
+---
+
 ### Dependencies
 
 The only external dependency included in this plugin is [Picturefill](http://scottjehl.github.io/picturefill/) - v3.0.1. If you would like to remove Picturefill (see notes about [browser support](http://scottjehl.github.io/picturefill/#support)), add the following to your functions.php file:
