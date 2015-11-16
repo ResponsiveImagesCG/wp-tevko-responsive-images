@@ -488,5 +488,8 @@ function wp_image_add_srcset_and_sizes( $image, $image_meta, $attachment_id ) {
 	return $image;
 }
 
-// Add the filter to add 'srcset' and 'sizes' attributes to post thumbnails and gallery images.
+/*
+ * Add the filter to add 'srcset' and 'sizes' attributes to post thumbnails and gallery images.
+ * 'tevkori_filter_attachment_image_attributes()' can be found in wp-tevko-responsive-images.php
+ */
 add_filter( 'wp_get_attachment_image_attributes', 'tevkori_filter_attachment_image_attributes', 0, 3 );

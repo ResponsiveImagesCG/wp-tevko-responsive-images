@@ -76,3 +76,31 @@ function tevkori_replace_data_sizes( $content ) {
 	return str_replace( ' data-sizes="', ' sizes="', $content );
 }
 add_filter( 'the_content', 'tevkori_replace_data_sizes' );
+
+/**
+ * Filter to add 'srcset' and 'sizes' attributes to post thumbnails and gallery images.
+ * The filter is added to the hook in wp-tevko-core-functions.php because
+ * it is only needed on a version of WordPress previous to 4.4.
+ *
+ * @since 2.3.0
+ * @see 'wp_get_attachment_image_attributes'
+ *
+ * @return array Attributes for image.
+ */
+function tevkori_filter_attachment_image_attributes( $attr, $attachment, $size ) {
+	// Set 'srcset' and 'sizes' if not already present and both were returned.
+	if ( empty( $attr['srcset'] ) ) {
+		$srcset = wp_get_attachment_image_srcset( $attachment->ID, $size );
+		$sizes  = wp_get_attachment_image_sizes( $attachment->ID, $size );
+
+		if ( $srcset && $sizes ) {
+			$attr['srcset'] = $srcset;
+
+			if ( empty( $attr['sizes'] ) ) {
+				$attr['sizes'] = $sizes;
+			}
+		}
+	}
+
+	return $attr;
+}
