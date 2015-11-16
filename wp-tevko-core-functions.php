@@ -315,7 +315,7 @@ function wp_calculate_image_sizes( $size, $image_src, $image_meta, $attachment_i
  *
  * @since 3.0.0
  *
- * @see 'wp_image_add_srcset_and_sizes()'
+ * @see wp_image_add_srcset_and_sizes()
  *
  * @param string $content The raw post content to be filtered.
  * @return string Converted content with 'srcset' and 'sizes' attributes added to images.
@@ -404,8 +404,8 @@ function tevkori_get_media_embedded_in_content( $content, $types = null ) {
  *
  * @since 3.0.0
  *
- * @see 'wp_get_attachment_image_srcset()'
- * @see 'wp_get_attachment_image_sizes()'
+ * @see wp_calculate_image_srcset()
+ * @see wp_calculate_image_sizes()
  *
  * @param string $image         An HTML 'img' element to be filtered.
  * @param array  $image_meta    The image meta data as returned by 'wp_get_attachment_metadata()'.
