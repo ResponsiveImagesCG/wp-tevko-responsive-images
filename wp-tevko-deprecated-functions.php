@@ -376,7 +376,15 @@ function tevkori_replace_data_sizes( $content ) {
 }
 add_filter( 'the_content', 'tevkori_replace_data_sizes' );
 
-function wp_get_attachment_image_sizes_filter_shim( $sizes, $size, $image_src, $image_meta, $attachment_id ) {
+/**
+ * Backward compatibility shim for the deprecated 'wp_get_attachment_image_sizes' filter.
+ *
+ * @since 3.1.0
+ * @access private
+ *
+ * @see 'wp_calculate_image_sizes'
+ */
+function _wp_get_attachment_image_sizes_filter_shim( $sizes, $size, $image_src, $image_meta, $attachment_id ) {
 	if ( has_filter( 'wp_get_attachment_image_sizes' ) ) {
 		/**
 		 * Filter the output of 'wp_get_attachment_image_sizes()'.
@@ -398,4 +406,4 @@ function wp_get_attachment_image_sizes_filter_shim( $sizes, $size, $image_src, $
 		return $sizes;
 	}
 }
-add_filter( 'wp_calculate_image_sizes', 'wp_get_attachment_image_sizes_filter_shim', 10, 5 );
+add_filter( 'wp_calculate_image_sizes', '_wp_get_attachment_image_sizes_filter_shim', 10, 5 );
