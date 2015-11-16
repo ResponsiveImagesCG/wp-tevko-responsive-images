@@ -37,48 +37,18 @@ add_action( 'after_setup_theme', 'custom_theme_setup' );
 ***Known issues:***
 * Some people have encountered memory limits when uploading large files with the advanced image compression settings enabled (see [#150](https://github.com/ResponsiveImagesCG/wp-tevko-responsive-images/issues/150)).
 
-
 ---
+
 ### Function/Hook Reference
 
-#### wp_get_attachment_image_sizes( $size, $image_meta = null, $attachment_id = 0, $image_src = null )
+#### Function wp_get_attachment_image_srcset
 
-Create 'sizes' attribute value for an image.
+`wp_get_attachment_image_srcset( $attachment_id, $size = 'medium', $image_meta = null )`
 
-**Return:** (string|bool) A valid source size value for use in a 'sizes' attribute or false.
+Retrieves the value for an image attachment's `srcset` attribute.
 
-##### Parameters
-
-**$size** (array|string)
-Image size. Accepts any valid image size name ('thumbnail', 'medium', etc.), or an array of width and height values in pixels (in that order).
-
-**$image_meta** (array)            (Optional) The image meta data as returned by 'wp_get_attachment_metadata()'.
-
-**$attachment_id** (int)
-(Optional) Image attachment ID. Either `$image_meta` or `$attachment_id` is needed when using the image size name as argument for `$size`.
-
-**$image_src** (string)
-(Optional) The URL to the image file.
-
-##### Usage Example
-
-```
-<img src="myimg.png" sizes="<?php echo esc_attr( wp_get_attachment_image_sizes( 'medium' ) ); ?>" >
-```
-
-By default, the sizes attribute will be declared as 100% of the viewport width when the viewport width is smaller than the width of the image, or to the width of the image itself when the viewport is larger than the image. In other words, this:
-
-`(max-width: {{image-width}}) 100vw, {{image-width}}`
-
-You can override those defaults by adding a filter to `wp_get_attachment_image_sizes`.
-
----
-
-#### wp_get_attachment_image_srcset( $attachment_id, $size = 'medium', $image_meta = null )
-
-Retrieves the value for an image attachment's 'srcset' attribute.
-
-**Return:** (string|bool) A 'srcset' value string or false.
+**Return:**
+(string|bool) A `srcset` value string or false.
 
 ##### Parameters
 
@@ -86,35 +56,293 @@ Retrieves the value for an image attachment's 'srcset' attribute.
 Image attachment ID.
 
 **$size** (array|string)
-Image size. Accepts any valid image size, or an array of width and height values in pixels (in that order). Default 'medium'.
+(Optional) Image size. Accepts any valid image size ('thumbnail', 'medium', etc.), or an array of width and height values in pixels (in that order). Default 'medium'.
 
 **$image_meta** (array)
-(Optional) The image meta data as returned by 'wp_get_attachment_metadata()'.
+(Optional) The image meta data as returned by `wp_get_attachment_metadata()`. Default null.
 
+##### Uses
+
+`wp_calculate_image_srcset()`
 
 ##### Usage Example
 
 ```
-<img src="myimg.png" srcset="<?php echo esc_attr( wp_get_attachment_image_srcset( 11, 'medium' ) ); ?>" sizes="{{custom sizes attribute}}" >
+<?php
+$srcset_value = wp_get_attachment_image_srcset( 11, 'medium' );
+$srcset = $srcset_value ? ' srcset="' . esc_attr( $srcset_value ) . '"' : '';
+?>
+
+<img src="myimg.png"<?php echo $srcset; ?> sizes="{{custom sizes value}}">
 ```
+
+##### Note
+
+By default, the maximum width of images that are included in the `srcset` is 1600 pixels. You can override this default by adding a filter to `max_srcset_image_width`.
 
 ---
 
-#### apply_filters( 'max_srcset_image_width', 1600, $size_array );
+#### Function wp_calculate_image_srcset
 
-Filter the maximum image width to be included in a 'srcset' attribute.
+`wp_calculate_image_srcset( $size_array, $image_src, $image_meta, $attachment_id = 0 )`
+
+A helper function to calculate the image sources to include in a `srcset` attribute.
+
+**Return:** (string|bool)
+The `srcset` attribute value. False on error or when only one source exists.
+
+##### Parameters
+
+**$size_array** (array)
+Array of width and height values in pixels (in that order).
+
+**$image_src** (string)
+The `src` of the image.
+
+**$image_meta** (array)
+The image meta data as returned by `wp_get_attachment_metadata()`.
+
+**$attachment_id** (int)
+(Optional) Image attachment ID. Default 0.
+
+##### Used by
+
+`wp_get_attachment_image_srcset()`
+
+##### Usage Example
+
+```
+<?php
+$image_meta = wp_get_attachment_metadata( 11 );
+$image = wp_get_attachment_image_src( 11, 'medium' );
+if ( $image ) {
+	$image_src = $image[0];
+	$size_array = array(
+		absint( $image[1] ),
+		absint( $image[2] )
+	);
+}
+$srcset_value = wp_calculate_image_srcset( $size_array, $image_src, $image_meta );
+$srcset = $srcset_value ? ' srcset="' . esc_attr( $srcset_value ) . '"' : '';
+?>
+
+<img src="myimg.png"<?php echo $srcset; ?> sizes="{{custom sizes value}}">
+```
+
+##### Note
+
+By default, the maximum width of images that are included in the `srcset` is 1600 pixels. You can override this default by adding a filter to `max_srcset_image_width`.
+
+---
+
+#### Hook max_srcset_image_width
+
+`apply_filters( 'max_srcset_image_width', 1600, $size_array )`
+
+Filter the maximum image width to be included in a `srcset` attribute.
 
 ##### Parameters
 
 **$max_width** (int)
-The maximum image width to be included in the 'srcset'. Default '1600'.
+The maximum image width to be included in the `srcset`. Default '1600'.
 
 **$size_array** (array)
 Array of width and height values in pixels (in that order).
 
 ##### Used by
 
-wp_get_attachment_image_srcset()
+`wp_calculate_image_srcset()`
+
+---
+
+#### Hook wp_calculate_image_srcset
+
+`apply_filters( 'wp_calculate_image_srcset', $sources, $attachment_id, $size_array, $image_meta )`
+
+Filter an image's `srcset` sources.
+
+##### Parameters
+
+**$sources** (array)
+One or more arrays of source data to include in the `srcset`.
+
+```
+$width (array) {
+	$url (string)			The URL of an image source.
+	$descriptor (string)	The descriptor type used in the image candidate string,
+							either 'w' or 'x'.
+	$value (int)			The source width, if paired with a 'w' descriptor or a
+							pixel density value if paired with an 'x' descriptor.
+}
+```
+
+**$attachment_id** (int)
+Image attachment ID or 0.
+
+**$size_array** (array)
+Array of width and height values in pixels (in that order).
+
+**$image_meta** (array)
+The image meta data as returned by `wp_get_attachment_metadata()`.
+
+##### Used by
+
+`wp_calculate_image_srcset()`
+
+---
+
+#### Function wp_get_attachment_image_sizes
+
+`wp_get_attachment_image_sizes( $attachment_id, $size = 'medium', $image_meta = null )`
+
+Retrieves the value for an image attachment's `sizes` attribute.
+
+**Return:** (string|bool)
+A valid source size value for use in a `sizes` attribute or false.
+
+##### Parameters
+
+**$attachment_id** (int)
+Image attachment ID.
+
+**$size** (array|string)
+(Optional) Image size. Accepts any valid image size name ('thumbnail', 'medium', etc.), or an array of width and height values in pixels (in that order). Default 'medium'.
+
+**$image_meta** (array)
+(Optional) The image meta data as returned by `wp_get_attachment_metadata()`. Default null.
+
+##### Uses
+
+`wp_calculate_image_sizes()`
+
+##### Usage Example
+
+```
+<?php
+$sizes_value = wp_get_attachment_image_sizes( 11, 'medium' );
+$sizes = $sizes_value ? ' sizes="' . esc_attr( $sizes_value ) . '"' : '';
+?>
+
+<img src="myimg.png"<?php echo $sizes; ?> srcset="{{custom srcset value}}">
+```
+
+##### Note
+
+By default, the sizes attribute will be declared as 100% of the viewport width when the viewport width is smaller than the width of the image, or to the width of the image itself when the viewport is larger than the image:
+
+`(max-width: {{image-width}}) 100vw, {{image-width}}`
+
+You can override this default by adding a filter to `wp_calculate_image_sizes`.
+
+---
+
+#### Function wp_calculate_image_sizes
+
+`wp_calculate_image_sizes( $size, $image_src, $image_meta, $attachment_id = 0 )`
+
+Creates the `sizes` attribute value for an image.
+
+**Return:** (string|bool)
+A valid source size value for use in a `sizes` attribute or false.
+
+##### Parameters
+
+**$size** (array|string)
+Image size. Accepts any valid image size name ('thumbnail', 'medium', etc.), or an array of width and height values in pixels (in that order).
+
+**$image_src** (string)
+(Optional) The URL to the image file. Default null.
+
+**$image_meta** (array)
+(Optional) The image meta data as returned by `wp_get_attachment_metadata()`. Default null.
+
+**$attachment_id** (int)
+(Optional) Image attachment ID. Default 0.
+
+Either `$image_meta` or `$attachment_id` is needed when using the image size name as argument for `$size`.
+
+##### Used by
+
+`wp_get_attachment_image_sizes()`
+
+##### Usage Example
+
+```
+<?php
+$sizes_value = wp_calculate_image_sizes( 'medium', $image_src = null, $image_meta = null, 11 );
+$sizes = $sizes_value ? ' sizes="' . esc_attr( $sizes_value ) . '"' : '';
+?>
+
+<img src="myimg.png"<?php echo $sizes; ?> srcset="{{custom srcset value}}">
+```
+
+##### Note
+
+By default, the sizes attribute will be declared as 100% of the viewport width when the viewport width is smaller than the width of the image, or to the width of the image itself when the viewport is larger than the image:
+
+`(max-width: {{image-width}}) 100vw, {{image-width}}`
+
+You can override this default by adding a filter to `wp_calculate_image_sizes`.
+
+---
+
+#### Hook wp_calculate_image_sizes
+
+`apply_filters( 'wp_calculate_image_sizes', $sizes, $size, $image_src, $image_meta, $attachment_id )`
+
+Filter the output of `wp_calculate_image_sizes()`.
+
+##### Parameters
+
+**$sizes** (string)
+A source size value for use in a `sizes` attribute.
+
+**$size** (array|string)
+Requested size. Image size name or array of width and height values in pixels (in that order).
+
+**$image_src** (string|null)
+The URL to the image file or null.
+
+**$image_meta** (array|null)
+The image meta data as returned by `wp_get_attachment_metadata()` or null.
+
+**$attachment_id** (int)
+Image attachment ID of the original image or 0.
+
+##### Used by
+
+`wp_calculate_image_sizes()`
+
+---
+
+### Backward Compatibility
+
+The following filters are used for backward compatibility. If the described case is not applicable you may want to remove the filter from its hook.
+
+#### data-sizes
+
+Prior to version 2.5 a `srcset` and `data-sizes` attribute were added to the image while inserting the image in the content and we used a content filter to replace `data-sizes` by `sizes`. As from 2.5 both `srcset` and `sizes` are added to images using a content filter, but images that already have a `srcset` attribute are skipped. For this reason we still replace `data-sizes` by `sizes`.
+If you did not use the plugin before version 2.5 or if you have removed `data-sizes` from your content you can remove the filter:
+
+```
+remove_filter( 'the_content', 'tevkori_replace_data_sizes' );
+```
+
+#### tevkori_get_sizes() $args param and filter
+
+The deprecated function `tevkori_get_sizes()` had an `$args` param and a `tevkori_image_sizes_args` filter. To make those still work we added a shim. If you do not use `tevkori_get_sizes()` in your templates, or at least not pass an argument to the `$args` param, and if you don't use the deprecated `tevkori_image_sizes_args` filter hook, you can remove the filter:
+
+```
+remove_filter( 'wp_calculate_image_sizes', '_tevkori_image_sizes_args_shim', 1, 5 );
+```
+
+#### wp_get_attachment_image_sizes filter
+
+In version 3.0 we introduced a new filter: `wp_get_attachment_image_sizes`. In version 3.1 this has been replaced by `wp_calculate_image_sizes`. If you don't use the `wp_get_attachment_image_sizes` filter you can remove the filter that has been added for backward compatibility:
+
+```
+remove_filter( 'wp_calculate_image_sizes', 'wp_get_attachment_image_sizes_filter_shim', 10, 5 );
+```
 
 ---
 
