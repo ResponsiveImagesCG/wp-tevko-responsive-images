@@ -24,8 +24,8 @@ function _tevkori_deprecated_filter( $filter, $version, $replacement = null ) {
  *
  * @since 2.1.0
  * @deprecated 3.0.0 Use 'wp_get_attachment_image_srcset()'
- * @see 'wp_get_attachment_image_srcset()'
- * @see 'wp_calculate_image_srcset()'
+ *
+ * @see wp_get_attachment_image_srcset()
  *
  * @param int          $id   Image attachment ID.
  * @param array|string $size Image size. Accepts any valid image size, or an array of width and height
@@ -56,7 +56,8 @@ function tevkori_get_srcset_array( $id, $size = 'medium' ) {
 	 *
 	 * @since 2.4.0
 	 * @deprecated 3.0.0 Use 'wp_calculate_image_srcset'
-	 * @see 'wp_calculate_image_srcset'
+	 *
+	 * @see wp_calculate_image_srcset
 	 *
 	 * @param array        $arr   An array of image sources.
 	 * @param int          $id    Attachment ID for image.
@@ -74,8 +75,8 @@ function tevkori_get_srcset_array( $id, $size = 'medium' ) {
  *
  * @since 2.3.0
  * @deprecated 3.0.0 Use 'wp_get_attachment_image_srcset()'
- * @see 'wp_get_attachment_image_srcset()'
- * @see 'wp_calculate_image_srcset()'
+ *
+ * @see wp_get_attachment_image_srcset()
  *
  * @param int          $id   Image attachment ID.
  * @param array|string $size Image size. Accepts any valid image size, or an array of width and height
@@ -99,8 +100,8 @@ function tevkori_get_srcset( $id, $size = 'medium' ) {
  *
  * @since 2.1.0
  * @deprecated 3.0.0 Use 'wp_get_attachment_image_srcset()'
- * @see 'wp_get_attachment_image_srcset()'
- * @see 'wp_calculate_image_srcset()'
+ *
+ * @see wp_get_attachment_image_srcset()
  *
  * @param int          $id   Image attachment ID.
  * @param array|string $size Image size. Accepts any valid image size, or an array of width and height
@@ -126,8 +127,8 @@ function tevkori_get_srcset_string( $id, $size = 'medium' ) {
  *
  * @since 2.2.0
  * @deprecated 3.0.0 Use 'wp_get_attachment_image_sizes()'
- * @see 'wp_get_attachment_image_sizes()'
- * @see 'wp_calculate_image_sizes()'
+ *
+ * @see wp_get_attachment_image_sizes()
  *
  * @param int          $id   Image attachment ID.
  * @param array|string $size Image size. Accepts any valid image size, or an array of width and height
@@ -222,7 +223,8 @@ function _tevkori_sizes_has_args( $args = null ) {
  *
  * @since 3.1.0
  * @access private
- * @see 'wp_calculate_image_srcset'
+ *
+ * @see wp_calculate_image_srcset
  *
  * @return string A source size value for use in a 'sizes' attribute.
  */
@@ -264,7 +266,8 @@ function _tevkori_image_sizes_args_shim( $sizes, $size, $image_src, $image_meta,
 	*
 	* @since 2.4.0
 	* @deprecated 3.0.0 Use 'wp_calculate_image_sizes'
-	* @see 'wp_calculate_image_sizes'
+	*
+	* @see wp_calculate_image_sizes
 	*
 	* @param array        $args An array of arguments used to create a 'sizes' attribute.
 	* @param int          $id   Post ID of the original image.
@@ -318,8 +321,8 @@ add_filter( 'wp_calculate_image_sizes', '_tevkori_image_sizes_args_shim', 1, 5 )
  *
  * @since 2.2.0
  * @deprecated 3.0.0 Use 'wp_get_attachment_image_sizes()'
- * @see 'wp_get_attachment_image_sizes()'
- * @see 'wp_calculate_image_sizes()'
+ *
+ * @see wp_get_attachment_image_sizes()
  *
  * @param int          $id   Image attachment ID.
  * @param array|string $size Image size. Accepts any valid image size, or an array of width and height
@@ -349,7 +352,8 @@ function tevkori_get_sizes_string( $id, $size = 'medium', $args = null ) {
  *
  * @since 2.5.0
  * @deprecated 3.0.0 Use 'wp_make_content_images_responsive()'
- * @see 'wp_make_content_images_responsive()'
+ *
+ * @see wp_make_content_images_responsive()
  *
  * @param string $content The raw post content to be filtered.
  * @return string Converted content with 'srcset' and 'sizes' added to images.
@@ -363,7 +367,8 @@ function tevkori_filter_content_images( $content ) {
  * Filter to add 'srcset' and 'sizes' attributes to post thumbnails and gallery images.
  *
  * @since 2.3.0
- * @see 'wp_get_attachment_image_attributes'
+ *
+ * @see wp_get_attachment_image_attributes
  *
  * @return array Attributes for image.
  */
@@ -392,7 +397,8 @@ function wp_get_attachment_image_sizes_filter_shim( $sizes, $size, $image_src, $
 		 *
 		 * @since 3.0.0
 		 * @deprecated 3.1.0 Use 'wp_calculate_image_sizes'
-		 * @see 'wp_calculate_image_sizes'
+		 *
+		 * @see wp_calculate_image_sizes
 		 *
 		 * @param string       $sizes         A source size value for use in a 'sizes' attribute.
 		 * @param array|string $size          Image size. Image size name, or an array of width and height
