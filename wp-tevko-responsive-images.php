@@ -61,23 +61,6 @@ function tevkori_get_picturefill() {
 add_action( 'wp_enqueue_scripts', 'tevkori_get_picturefill' );
 
 /**
- * Back compatability shim for 'data-sizes' attributes in content.
- *
- * Prior to version 2.5 a 'srcset' and 'data-sizes' attribute were added to the image
- * while inserting the image in the content. We replace the 'data-sizes' attribute by
- * a 'sizes' attribute.
- *
- * @since 3.0.0
- *
- * @param string $content The content to filter;
- * @return string The filtered content with `data-sizes` repaced by `sizes` attributes.
- */
-function tevkori_replace_data_sizes( $content ) {
-	return str_replace( ' data-sizes="', ' sizes="', $content );
-}
-add_filter( 'the_content', 'tevkori_replace_data_sizes' );
-
-/**
  * Filter to add 'srcset' and 'sizes' attributes to post thumbnails and gallery images.
  * The filter is added to the hook in wp-tevko-core-functions.php because
  * it is only needed on a version of WordPress previous to 4.4.

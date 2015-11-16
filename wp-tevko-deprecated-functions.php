@@ -359,6 +359,23 @@ function tevkori_filter_content_images( $content ) {
 	return wp_make_content_images_responsive( $content );
 }
 
+/**
+ * Backward compatibility shim for 'data-sizes' attributes in content.
+ *
+ * Prior to version 2.5 a 'srcset' and 'data-sizes' attribute were added to the image
+ * while inserting the image in the content. We replace the 'data-sizes' attribute by
+ * a 'sizes' attribute.
+ *
+ * @since 3.0.0
+ *
+ * @param string $content The content to filter;
+ * @return string The filtered content with `data-sizes` replaced by `sizes` attributes.
+ */
+function tevkori_replace_data_sizes( $content ) {
+	return str_replace( ' data-sizes="', ' sizes="', $content );
+}
+add_filter( 'the_content', 'tevkori_replace_data_sizes' );
+
 function wp_get_attachment_image_sizes_filter_shim( $sizes, $size, $image_src, $image_meta, $attachment_id ) {
 	if ( has_filter( 'wp_get_attachment_image_sizes' ) ) {
 		/**
