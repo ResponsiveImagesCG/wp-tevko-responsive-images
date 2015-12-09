@@ -440,9 +440,19 @@ We use a hook because if you attempt to dequeue a script before it's enqueued, w
 
 ## Version
 
-3.1.0
+3.1.1
 
 ## Changelog
+
+**3.1.1**
+
+- Fixes a bug where the srcset of images in imported content was missing or broken (issue #263).
+- Reduces the accepted aspect ratio difference for images to be included in the srcset (issue #260).
+- Fixes a bug where `img` tags without ending slash don't get responsive images (issue #259).
+- Deprecates the helper function `tevkori_get_media_embedded_in_content()` which is no longer used.
+- Makes sure that the setup of default themes doesn't break the tests (issue #261).
+- Adds more examples to the Hook Reference in readme.md.
+- Corrections and improvements to inline documentation.
 
 **3.1.0**
 
