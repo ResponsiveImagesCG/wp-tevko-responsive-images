@@ -18,6 +18,13 @@ This plugin works by including all available image sizes for each image upload. 
 
 **Important notes**
 
+* As of WordPress 4.4, images are responsive by default. If you are on WordPress 4.4 or plan to update, you will not need to install this plugin.
+
+If you have had this plugin installed since before version 2.5 but are running version 4.4 of WordPress, it is important that you leave the plugin installed. This is because all versions of the plugin before version 2.5 relied on a `data-sizes` attribute being present on an image in order to provide the responsive markup needed. If the plugin in this case is removed, then images in posts will be left with invalid markup. We are working to address this issue, and you can keep track of our progress here at https://github.com/ResponsiveImagesCG/wp-tevko-responsive-images/issues/178.
+
+You can still use the plugin for advanced image compression support or as a simple way to include the picturefill script. The plugin will fall back to WordPress default functions if responsive image support is detected in your installation.
+
+
 * Version 3.1.0 includes important changes that make this plugin compatible with WordPress version 4.4. Upgrading is highly recommended.
 
 * As of version 2.5.0, the plugin adds `srcset` and `sizes` attributes to images on the front end instead of adding them to the image markup saved in posts.
