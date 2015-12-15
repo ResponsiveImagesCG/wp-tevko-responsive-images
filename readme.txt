@@ -3,8 +3,8 @@ Contributors: tevko, wilto, joemcgill, jaspermdegroot, chriscoyier, Michael McGi
 Donate link: https://app.etapestry.com/hosted/BoweryResidentsCommittee/OnlineDonation.html
 Tags: Responsive, Images, Responsive Images, SRCSET, Picturefill
 Requires at least: 4.0
-Tested up to: 4.3
-Stable tag: 3.1.0
+Tested up to: 4.4
+Stable tag: 3.1.1
 License: GPLv2
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
 
@@ -17,6 +17,13 @@ Bringing automatic default responsive images to WordPress.
 This plugin works by including all available image sizes for each image upload. Whenever WordPress outputs the image through the media uploader, or whenever a featured image is generated, those sizes will be included in the image tag via the srcset attribute.
 
 **Important notes**
+
+* As of WordPress 4.4, images are responsive by default. If you are on WordPress 4.4 or plan to update, you will not need to install this plugin.
+
+If you have had this plugin installed since before version 2.5 but are running version 4.4 of WordPress, it is important that you leave the plugin installed. This is because all versions of the plugin before version 2.5 relied on a `data-sizes` attribute being present on an image in order to provide the responsive markup needed. If the plugin in this case is removed, then images in posts will be left with invalid markup. We are working to address this issue, and you can keep track of our progress here at https://github.com/ResponsiveImagesCG/wp-tevko-responsive-images/issues/178.
+
+You can still use the plugin for advanced image compression support or as a simple way to include the picturefill script. The plugin will fall back to WordPress default functions if responsive image support is detected in your installation.
+
 
 * Version 3.1.0 includes important changes that make this plugin compatible with WordPress version 4.4. Upgrading is highly recommended.
 
@@ -31,6 +38,15 @@ This plugin works by including all available image sizes for each image upload. 
 3. If you'd like to enable the advanced image compression feature, Please see the instructions at https://github.com/ResponsiveImagesCG/wp-tevko-responsive-images/tree/dev#advanced-image-compression
 
 == Changelog ==
+
+= 3.1.1 =
+* Fixes a bug where the srcset of images in imported content was missing or broken.
+* Reduces the accepted aspect ratio difference for images to be included in the srcset.
+* Fixes a bug where `img` tags without ending slash don't get responsive images.
+* Deprecates the helper function `tevkori_get_media_embedded_in_content()` which is no longer used.
+* Makes sure that the setup of default themes doesn't break the tests.
+* Adds more examples to the Hook Reference in readme.md.
+* Corrections and improvements to inline documentation.
 
 = 3.1.0 =
 * Adds special handling of GIFs in srcset attributes to preserve animation.

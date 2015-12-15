@@ -1,3 +1,11 @@
+##WordPress 4.4 and Native Responsive Images
+
+As of WordPress 4.4, images are responsive by default. If you are on WordPress 4.4 or plan to update, you will not need to install this plugin.
+
+If you have had this plugin installed since before version 2.5 but are running version 4.4 of WordPress, it is important that you leave the plugin installed. This is because all versions of the plugin before version 2.5 relied on a `data-sizes` attribute being present on an image in order to provide the responsive markup needed. If the plugin in this case is removed, then images in posts will be left with invalid markup. We are working to address this issue, and you can [keep track of our progress here](https://github.com/ResponsiveImagesCG/wp-tevko-responsive-images/issues/178).
+
+You can still use the plugin for advanced image compression support or as a simple way to include the picturefill script. The plugin will fall back to WordPress default functions if responsive image support is detected in your installation.
+
 RICG-responsive-images
 ---
 
@@ -440,9 +448,19 @@ We use a hook because if you attempt to dequeue a script before it's enqueued, w
 
 ## Version
 
-3.1.0
+3.1.1
 
 ## Changelog
+
+**3.1.1**
+
+- Fixes a bug where the srcset of images in imported content was missing or broken (issue #263).
+- Reduces the accepted aspect ratio difference for images to be included in the srcset (issue #260).
+- Fixes a bug where `img` tags without ending slash don't get responsive images (issue #259).
+- Deprecates the helper function `tevkori_get_media_embedded_in_content()` which is no longer used.
+- Makes sure that the setup of default themes doesn't break the tests (issue #261).
+- Adds more examples to the Hook Reference in readme.md.
+- Corrections and improvements to inline documentation.
 
 **3.1.0**
 
