@@ -29,9 +29,9 @@ class Respimg extends Imagick {
 	 *
 	 * This function is basically equivalent to:
 	 *
-	 * $optim == true: `mogrify -path OUTPUT_PATH -filter Triangle -define filter:support=2.0 -thumbnail OUTPUT_WIDTH -unsharp 0.25x0.08+8.3+0.045 -dither None -posterize 136 -quality 82 -define jpeg:fancy-upsampling=off -define png:compression-filter=5 -define png:compression-level=9 -define png:compression-strategy=1 -define png:exclude-chunk=all -interlace none -colorspace sRGB INPUT_PATH`
+	 * $optim == true: `mogrify -path OUTPUT_PATH -filter Triangle -define filter:support=2.0 -thumbnail OUTPUT_WIDTH -unsharp 0.25x0.08+8.3+0.045 -quality 82 -define jpeg:fancy-upsampling=off -define png:compression-filter=5 -define png:compression-level=9 -define png:compression-strategy=1 -define png:exclude-chunk=all -interlace none -colorspace sRGB INPUT_PATH`
 	 *
-	 * $optim == false: `mogrify -path OUTPUT_PATH -filter Triangle -define filter:support=2.0 -thumbnail OUTPUT_WIDTH -unsharp 0.25x0.25+8+0.065 -dither None -posterize 136 -quality 82 -define jpeg:fancy-upsampling=off -define png:compression-filter=5 -define png:compression-level=9 -define png:compression-strategy=1 -define png:exclude-chunk=all -interlace none -colorspace sRGB -strip INPUT_PATH`
+	 * $optim == false: `mogrify -path OUTPUT_PATH -filter Triangle -define filter:support=2.0 -thumbnail OUTPUT_WIDTH -unsharp 0.25x0.25+8+0.065 -quality 82 -define jpeg:fancy-upsampling=off -define png:compression-filter=5 -define png:compression-level=9 -define png:compression-strategy=1 -define png:exclude-chunk=all -interlace none -colorspace sRGB -strip INPUT_PATH`
 	 *
 	 * @access	public
 	 *
@@ -50,7 +50,7 @@ class Respimg extends Imagick {
 		} else {
 			$this->unsharpMaskImage( 0.25, 0.25, 8, 0.065 );
 		}
-		$this->posterizeImage( 136, false );
+
 		$this->setImageCompressionQuality( 82 );
 		$this->setOption( 'jpeg:fancy-upsampling', 'off' );
 		$this->setOption( 'png:compression-filter', '5' );
